@@ -619,10 +619,19 @@ function trackEvent(eventType, data = {}) {
         linkId: currentLinkData.id,
         eventType: eventType, // 'link_click', 'qr_scan', 'copy_link'
         timestamp: new Date().toISOString(),
+        
+        // Dados principais do link (sempre enviados)
+        whatsappUrl: currentLinkData.whatsappUrl,
+        message: currentLinkData.message || '',
+        campaign: currentLinkData.campaign || 'Sem nome',
+        
+        // Dados de contexto
         device: deviceInfo,
         location: userLocation,
         referrer: document.referrer || 'direct',
         pageUrl: window.location.href,
+        
+        // Dados específicos do evento
         ...data
     };
     
@@ -653,7 +662,7 @@ function trackEvent(eventType, data = {}) {
 // Tracking específico para clique no link
 function trackLinkClick(element) {
     trackEvent('link_click', {
-        source: 'manual_click',
+        origin: 'manual_click',
         linkText: element.textContent,
         buttonType: 'whatsapp_button'
     });
@@ -669,7 +678,7 @@ function setupQRTracking() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 trackEvent('qr_visible', {
-                    source: 'qr_code',
+                    origin: 'qr_code',
                     visibility: 'appeared_in_viewport'
                 });
             }
@@ -683,7 +692,7 @@ function setupQRTracking() {
         if (document.hidden) {
             // Usuário saiu da página (possível scan)
             trackEvent('possible_qr_scan', {
-                source: 'qr_code',
+                origin: 'qr_code',
                 action: 'page_hidden',
                 timeOnPage: Date.now() - window.pageLoadTime
             });
@@ -706,7 +715,7 @@ function copyLink(elementId) {
         
         // Tracking do copy
         trackEvent('copy_link', {
-            source: 'copy_button',
+            origin: 'copy_button',
             linkType: 'whatsapp_direct'
         });
     }).catch(() => {
@@ -720,7 +729,7 @@ function copyLink(elementId) {
         showNotification('📋 Link copiado!');
         
         trackEvent('copy_link', {
-            source: 'copy_button_fallback',
+            origin: 'copy_button_fallback',
             linkType: 'whatsapp_direct'
         });
     });
@@ -819,20 +828,45 @@ function generateQRCode(text) {
 async function sendEventToWebhook(eventData) {
     if (!CONFIG.WEBHOOK_URL) return;
     
+    /* 
+    📡 DADOS ENVIADOS PARA O WEBHOOK:
+    
+    ✅ SEMPRE ENVIADO:
+    - whatsappUrl: Link completo gerado (ex: https://wa.me/5547997195432?text=...)
+    - message: Mensagem do WhatsApp
+    - campaign: Nome da campanha
+    - timestamp: Hora exata do evento
+    
+    📱 DADOS DE CONTEXTO:
+    - device: tipo, browser, OS, resolução, idioma, timezone
+    - location: país, estado, cidade, IP, ISP
+    
+    🎯 ORIGEM DO EVENTO:
+    - origin: 'qr_code', 'copy_button', 'manual_click', 'form_submission', 'page_unload'
+    - eventType: 'link_generated', 'link_click', 'qr_visible', 'copy_link', 'possible_qr_scan', 'page_exit'
+    */
+    
     try {
+        const payload = {
+            action: 'event_tracked',
+            eventData: eventData,
+            source: 'invisible_tracking',
+            timestamp: new Date().toISOString()
+        };
+        
         const response = await fetch(CONFIG.WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'event_tracked',
-                eventData: eventData,
-                source: 'invisible_tracking',
-                timestamp: new Date().toISOString()
-            })
+            body: JSON.stringify(payload)
         });
         
         if (response.ok) {
-            console.log('✅ Evento enviado para webhook:', CONFIG.WEBHOOK_URL);
+            console.log('✅ Evento enviado para webhook:', {
+                event: eventData.eventType,
+                campaign: eventData.campaign,
+                url: eventData.whatsappUrl,
+                origin: eventData.origin
+            });
         } else {
             console.log('⚠️ Webhook retornou erro:', response.status);
         }
@@ -865,7 +899,7 @@ document.getElementById('linkForm').addEventListener('submit', function(event) {
     // Criar dados do link para tracking
     const linkData = {
         id: generateLinkId(),
-        whatsappUrl: whatsappLink,
+        whatsappUrl: whatsappLink, // URL completa do WhatsApp
         campaign: formData.campaign,
         phone: formData.phone,
         message: formData.message,
@@ -900,8 +934,7 @@ document.getElementById('linkForm').addEventListener('submit', function(event) {
     // Tracking da criação do link
     if (formData.enableTracking) {
         trackEvent('link_generated', {
-            source: 'form_submission',
-            campaign: formData.campaign,
+            origin: 'form_submission',
             hasMessage: !!formData.message
         });
     }
@@ -942,7 +975,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('beforeunload', () => {
     if (currentLinkData && currentLinkData.enableTracking) {
         trackEvent('page_exit', {
-            source: 'page_unload',
+            origin: 'page_unload',
             timeOnPage: Date.now() - window.pageLoadTime
         });
     }
