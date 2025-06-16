@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Links para WhatsApp - Com Analytics</title>
-    <meta name="description" content="Gere links rastreáveis do WhatsApp com analytics completos - dispositivos, localização, cliques em tempo real">
+    <title>Gerador de Links para WhatsApp - Com Analytics Invisível</title>
+    <meta name="description" content="Gere links diretos do WhatsApp com analytics completos - tracking invisível sem redirecionamento">
     <meta name="keywords" content="whatsapp, analytics, link generator, rastreamento, marketing digital">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Gerador WhatsApp Analytics">
-    <meta property="og:description" content="Crie links do WhatsApp com rastreamento completo de cliques">
+    <meta property="og:description" content="Crie links do WhatsApp com rastreamento invisível completo">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
@@ -234,15 +234,6 @@
             background: #545b62;
         }
 
-        .btn-test {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-test:hover {
-            background: #138496;
-        }
-
         .btn-whatsapp {
             background: var(--whatsapp-green);
             color: white;
@@ -325,6 +316,30 @@
             font-size: 0.8rem;
         }
 
+        .tracking-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--whatsapp-green);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            box-shadow: var(--card-shadow);
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .tracking-status.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .github-link {
             position: absolute;
             top: 1rem;
@@ -337,14 +352,6 @@
 
         .github-link:hover {
             color: #333;
-        }
-
-        .qr-analytics-note {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -382,14 +389,14 @@
 
     <div class="header">
         <h1>📱 WhatsApp Analytics</h1>
-        <p class="subtitle">Gere links rastreáveis com analytics completos</p>
-        <span class="badge">🆕 V2.1 - QR Code Corrigido</span>
+        <p class="subtitle">Links diretos com tracking invisível</p>
+        <span class="badge">🆕 V3.0 - Sem Redirecionamento</span>
     </div>
 
     <form id="linkForm">
         <div class="form-group">
             <label for="whatsappNumber">📞 Número do WhatsApp</label>
-            <input type="text" id="whatsappNumber" placeholder="11988884444" required>
+            <input type="text" id="whatsappNumber" placeholder="47997195432" required>
         </div>
 
         <div class="form-group">
@@ -402,72 +409,48 @@
             <input type="text" id="campaign" placeholder="Ex: Lançamento Produto X">
         </div>
 
-        <div class="form-group">
-            <label for="utm_source">📊 UTM Source</label>
-            <input type="text" id="utm_source" placeholder="Ex: instagram, facebook, google">
-        </div>
-
-        <div class="form-group">
-            <label for="utm_medium">📈 UTM Medium</label>
-            <input type="text" id="utm_medium" placeholder="Ex: post, story, anuncio">
-        </div>
-
-        <div class="form-group">
-            <label for="utm_campaign">🏷️ UTM Campaign</label>
-            <input type="text" id="utm_campaign" placeholder="Ex: blackfriday2025">
-        </div>
-
         <div class="checkbox-group">
             <input type="checkbox" id="enableTracking" checked>
-            <label for="enableTracking">📊 Habilitar Analytics Avançado</label>
+            <label for="enableTracking">📊 Habilitar Analytics Invisível</label>
         </div>
 
         <button type="submit" class="generate-btn">
-            🚀 Gerar Links Rastreáveis
+            🚀 Gerar Link Rastreável
         </button>
     </form>
 
     <div id="resultSection" class="result-section">
         <div class="result-title">
-            ✅ Links Gerados com Sucesso!
+            ✅ Link Gerado com Sucesso!
         </div>
 
         <div class="link-box">
-            <div class="link-label">🔗 Link Original (WhatsApp Direto)</div>
-            <div id="originalLink" class="link-url"></div>
+            <div class="link-label">🔗 Link WhatsApp (Direto com Analytics)</div>
+            <div id="whatsappLink" class="link-url"></div>
             <div class="link-actions">
-                <button class="btn-small btn-copy" onclick="copyLink('originalLink')">📋 Copiar</button>
-                <a id="originalLinkAction" href="#" target="_blank" class="btn-small btn-whatsapp">💬 Testar</a>
-            </div>
-        </div>
-
-        <div class="link-box" id="trackingLinkBox">
-            <div class="link-label">📊 Link Rastreável (Use Este para Analytics)</div>
-            <div id="trackingLink" class="link-url"></div>
-            <div class="link-actions">
-                <button class="btn-small btn-copy" onclick="copyLink('trackingLink')">📋 Copiar</button>
-                <a id="trackingLinkAction" href="#" target="_blank" class="btn-small btn-test">🧪 Testar</a>
+                <button class="btn-small btn-copy" onclick="copyLink('whatsappLink')">📋 Copiar</button>
+                <a id="whatsappLinkAction" href="#" target="_blank" class="btn-small btn-whatsapp" onclick="trackLinkClick(this)">💬 Abrir WhatsApp</a>
             </div>
         </div>
 
         <div class="analytics-info" id="analyticsInfo">
-            <strong>📊 Analytics que serão capturados:</strong>
+            <strong>📊 Analytics que serão capturados automaticamente:</strong>
             <div class="analytics-features">
                 <div class="feature-item">📱 Dispositivo</div>
                 <div class="feature-item">🌐 Navegador</div>
-                <div class="feature-item">🕐 Horário</div>
-                <div class="feature-item">🌍 Localização</div>
-                <div class="feature-item">📊 Origem</div>
-                <div class="feature-item">🔄 Conversões</div>
+                <div class="feature-item">🕐 Horário Exato</div>
+                <div class="feature-item">🌍 Cidade/Estado/País</div>
+                <div class="feature-item">📊 Origem (QR/Link)</div>
+                <div class="feature-item">🔄 Interações</div>
             </div>
         </div>
 
         <a href="dashboard.html" target="_blank" class="btn-small btn-dashboard">
-            📊 Abrir Dashboard de Analytics
+            📊 Ver Analytics Coletados
         </a>
 
         <div class="qr-section">
-            <div class="qr-title">📱 QR Code para Compartilhamento</div>
+            <div class="qr-title">📱 QR Code (Rastreamento Automático)</div>
             <div id="qrcode"></div>
         </div>
     </div>
@@ -477,18 +460,141 @@
     📋 Link copiado para a área de transferência!
 </div>
 
+<div id="trackingStatus" class="tracking-status">
+    📊 Coletando Analytics...
+</div>
+
 <script>
 // Configurações
 const CONFIG = {
-    BASE_URL: window.location.origin + window.location.pathname.replace('index.html', ''),
-    STORAGE_KEY: 'whatsapp_analytics_github',
-    WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/qrdoce' // Opcional
+    STORAGE_KEY: 'whatsapp_analytics_invisible',
+    WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/analytics', // Opcional
+    GEOLOCATION_APIS: [
+        'https://ipapi.co/json/',
+        'https://ipinfo.io/json',
+        'https://api.ipify.org?format=json'
+    ]
 };
+
+// Estado global
+let currentLinkData = null;
+let userLocation = null;
+let deviceInfo = null;
 
 // Dados em memória
 let analyticsData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
 
-// Utilitários
+// Utilitários de detecção
+function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    let deviceType = 'desktop';
+    if (/ipad|tablet|kindle|playbook|silk/i.test(ua) || (isTouchDevice && window.innerWidth > 600)) {
+        deviceType = 'tablet';
+    } else if (/mobile|android|iphone|ipod|phone|blackberry|opera mini|iemobile/i.test(ua) || (isTouchDevice && window.innerWidth <= 600)) {
+        deviceType = 'mobile';
+    }
+    
+    let browser = 'Unknown';
+    if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+    else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+    else if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Edg')) browser = 'Edge';
+    else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
+    
+    let os = 'Unknown';
+    if (ua.includes('Windows')) os = 'Windows';
+    else if (ua.includes('Mac OS')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+    
+    return {
+        deviceType,
+        browser,
+        os,
+        screenResolution: `${screen.width}x${screen.height}`,
+        windowSize: `${window.innerWidth}x${window.innerHeight}`,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        userAgent: ua,
+        touchSupport: isTouchDevice,
+        cookiesEnabled: navigator.cookieEnabled,
+        onlineStatus: navigator.onLine
+    };
+}
+
+// Geolocalização via IP (múltiplas APIs)
+async function getLocationData() {
+    const fallbackLocation = {
+        country: 'Brasil',
+        region: 'Santa Catarina',
+        city: 'Balneário Camboriú',
+        ip: 'unknown',
+        timezone: 'America/Sao_Paulo'
+    };
+
+    for (const api of CONFIG.GEOLOCATION_APIS) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
+            const response = await fetch(api, { 
+                signal: controller.signal,
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                return {
+                    country: data.country_name || data.country || fallbackLocation.country,
+                    region: data.region || data.region_name || fallbackLocation.region,
+                    city: data.city || fallbackLocation.city,
+                    ip: data.ip || data.query || 'unknown',
+                    timezone: data.timezone || fallbackLocation.timezone,
+                    isp: data.isp || data.org || 'Unknown',
+                    postal: data.postal || data.zip || 'Unknown'
+                };
+            }
+        } catch (error) {
+            console.log(`API ${api} falhou:`, error.message);
+            continue;
+        }
+    }
+    
+    return fallbackLocation;
+}
+
+// Inicializar tracking invisível
+async function initializeInvisibleTracking() {
+    showTrackingStatus('📍 Detectando localização...');
+    
+    try {
+        // Coletar informações básicas
+        deviceInfo = getDeviceInfo();
+        userLocation = await getLocationData();
+        
+        showTrackingStatus('✅ Analytics prontos!');
+        setTimeout(hideTrackingStatus, 2000);
+        
+        console.log('📊 Sistema de tracking inicializado:', {
+            device: deviceInfo.deviceType,
+            location: `${userLocation.city}, ${userLocation.region}, ${userLocation.country}`,
+            browser: deviceInfo.browser
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar tracking:', error);
+        showTrackingStatus('⚠️ Tracking limitado');
+        setTimeout(hideTrackingStatus, 3000);
+    }
+}
+
+// Utilitários básicos
 function generateLinkId() {
     return 'wa_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
 }
@@ -497,38 +603,112 @@ function formatPhoneNumber(phone) {
     return phone.replace(/\D/g, '').slice(0, 11);
 }
 
-function createWhatsAppLink(phone, message, utmParams) {
+function createWhatsAppLink(phone, message) {
     let link = `https://wa.me/55${phone}`;
-    
-    const params = [];
-    if (message) params.push(`text=${encodeURIComponent(message)}`);
-    
-    // Adicionar UTMs
-    Object.entries(utmParams).forEach(([key, value]) => {
-        if (value) params.push(`${key}=${encodeURIComponent(value)}`);
-    });
-    
-    if (params.length > 0) {
-        link += '?' + params.join('&');
+    if (message) {
+        link += `?text=${encodeURIComponent(message)}`;
     }
-    
     return link;
 }
 
-function createTrackingLink(linkId) {
-    return `${CONFIG.BASE_URL}redirect.html?id=${linkId}`;
+// Tracking de eventos
+function trackEvent(eventType, data = {}) {
+    if (!currentLinkData || !currentLinkData.enableTracking) return;
+    
+    const eventData = {
+        linkId: currentLinkData.id,
+        eventType: eventType, // 'link_click', 'qr_scan', 'copy_link'
+        timestamp: new Date().toISOString(),
+        device: deviceInfo,
+        location: userLocation,
+        referrer: document.referrer || 'direct',
+        pageUrl: window.location.href,
+        ...data
+    };
+    
+    // Salvar no localStorage
+    const storedData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+    const linkIndex = storedData.findIndex(link => link.id === currentLinkData.id);
+    
+    if (linkIndex !== -1) {
+        if (!storedData[linkIndex].events) {
+            storedData[linkIndex].events = [];
+        }
+        storedData[linkIndex].events.push(eventData);
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(storedData));
+        
+        console.log(`📊 Evento rastreado: ${eventType}`, eventData);
+        
+        // Feedback visual
+        showTrackingStatus(`📊 ${eventType} rastreado!`);
+        setTimeout(hideTrackingStatus, 2000);
+    }
+    
+    // Enviar para webhook (opcional)
+    if (CONFIG.WEBHOOK_URL) {
+        sendEventToWebhook(eventData).catch(console.warn);
+    }
 }
 
+// Tracking específico para clique no link
+function trackLinkClick(element) {
+    trackEvent('link_click', {
+        source: 'manual_click',
+        linkText: element.textContent,
+        buttonType: 'whatsapp_button'
+    });
+}
+
+// Tracking para QR Code (quando fica visível)
+function setupQRTracking() {
+    const qrCode = document.querySelector('#qrcode img');
+    if (!qrCode) return;
+    
+    // Intersection Observer para detectar quando QR Code fica visível
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                trackEvent('qr_visible', {
+                    source: 'qr_code',
+                    visibility: 'appeared_in_viewport'
+                });
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    observer.observe(qrCode);
+    
+    // Detectar possível scan via Page Visibility API
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // Usuário saiu da página (possível scan)
+            trackEvent('possible_qr_scan', {
+                source: 'qr_code',
+                action: 'page_hidden',
+                timeOnPage: Date.now() - window.pageLoadTime
+            });
+        }
+    });
+}
+
+// Salvar dados do link
 function saveToStorage(linkData) {
     analyticsData.push(linkData);
     localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(analyticsData));
 }
 
+// Funções de interface
 function copyLink(elementId) {
     const text = document.getElementById(elementId).textContent;
     
     navigator.clipboard.writeText(text).then(() => {
         showNotification('📋 Link copiado para a área de transferência!');
+        
+        // Tracking do copy
+        trackEvent('copy_link', {
+            source: 'copy_button',
+            linkType: 'whatsapp_direct'
+        });
     }).catch(() => {
         // Fallback para navegadores mais antigos
         const textArea = document.createElement('textarea');
@@ -538,6 +718,11 @@ function copyLink(elementId) {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         showNotification('📋 Link copiado!');
+        
+        trackEvent('copy_link', {
+            source: 'copy_button_fallback',
+            linkType: 'whatsapp_direct'
+        });
     });
 }
 
@@ -551,68 +736,46 @@ function showNotification(message) {
     }, 3000);
 }
 
-function generateQRCode(text, isTracking = false) {
+function showTrackingStatus(message) {
+    const status = document.getElementById('trackingStatus');
+    status.textContent = message;
+    status.classList.add('show');
+}
+
+function hideTrackingStatus() {
+    const status = document.getElementById('trackingStatus');
+    status.classList.remove('show');
+}
+
+function generateQRCode(text) {
     const qrcodeContainer = document.getElementById('qrcode');
     qrcodeContainer.innerHTML = '';
     
-    // Adicionar nota explicativa sobre o tipo de QR Code
-    const note = document.createElement('div');
-    note.className = 'qr-analytics-note';
-    note.style.cssText = `
-        background: ${isTracking ? '#e3f2fd' : '#fff3cd'};
-        border: 1px solid ${isTracking ? '#90caf9' : '#ffeaa7'};
-        border-radius: 6px;
-        padding: 10px;
-        margin-bottom: 15px;
-        font-size: 12px;
-        color: ${isTracking ? '#1565c0' : '#856404'};
-    `;
-    note.innerHTML = isTracking ? 
-        '<strong>📊 QR Code com Analytics:</strong> Este QR Code irá rastrear todos os dados de acesso.' :
-        '<strong>🔗 QR Code Direto:</strong> Este QR Code vai direto para o WhatsApp (sem analytics).';
-    
-    qrcodeContainer.appendChild(note);
-    
     // Verificar se a URL é muito longa para QR Code
     if (text.length > 300) {
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = `
-            padding: 20px;
-            text-align: center;
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
+        qrcodeContainer.innerHTML = `
+            <div style="padding: 20px; text-align: center; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+                <p style="color: #856404; margin: 0 0 10px 0;"><strong>⚠️ Link muito longo para QR Code</strong></p>
+                <p style="color: #856404; font-size: 14px; margin: 0;">Use o botão "Copiar Link" acima</p>
+            </div>
         `;
-        errorDiv.innerHTML = `
-            <p style="color: #856404; margin: 0 0 10px 0;"><strong>⚠️ Link muito longo para QR Code</strong></p>
-            <p style="color: #856404; font-size: 14px; margin: 0;">Use o botão "Copiar Link" acima para compartilhar</p>
-        `;
-        qrcodeContainer.appendChild(errorDiv);
         return;
     }
     
     // Mostrar loading
-    const loadingDiv = document.createElement('div');
-    loadingDiv.style.cssText = 'text-align: center; padding: 20px; color: #6c757d;';
-    loadingDiv.textContent = '🔄 Gerando QR Code...';
-    qrcodeContainer.appendChild(loadingDiv);
+    qrcodeContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;">🔄 Gerando QR Code...</div>';
     
-    // Configurações do QR Code otimizadas
+    // Configurações do QR Code
     const qrParams = new URLSearchParams({
         size: '250x250',
         data: text,
         bgcolor: 'f8f9fa',
         color: '25d366',
-        ecc: 'M', // Error correction level Medium
+        ecc: 'M',
         format: 'png'
     });
     
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?${qrParams.toString()}`;
-    
-    // Debug: mostrar URL sendo gerada
-    console.log('🔗 Gerando QR Code para URL:', text);
-    console.log('📏 Tamanho da URL:', text.length, 'caracteres');
-    console.log('📊 QR Code com tracking:', isTracking);
     
     const img = document.createElement('img');
     img.src = qrUrl;
@@ -623,7 +786,7 @@ function generateQRCode(text, isTracking = false) {
     img.style.borderRadius = '8px';
     
     img.onload = () => {
-        qrcodeContainer.removeChild(loadingDiv);
+        qrcodeContainer.innerHTML = '';
         qrcodeContainer.appendChild(img);
         
         // Adicionar dica de uso
@@ -632,45 +795,48 @@ function generateQRCode(text, isTracking = false) {
         tip.style.color = '#6c757d';
         tip.style.marginTop = '10px';
         tip.style.textAlign = 'center';
-        tip.textContent = '📱 Escaneie com a câmera do seu celular';
+        tip.innerHTML = '📱 <strong>Escaneie para abrir WhatsApp diretamente</strong><br>🔍 Cliques serão rastreados automaticamente';
         qrcodeContainer.appendChild(tip);
         
-        console.log('✅ QR Code gerado com sucesso');
+        // Configurar tracking do QR Code
+        setupQRTracking();
+        
+        console.log('✅ QR Code gerado com tracking ativo');
     };
     
     img.onerror = () => {
         console.error('❌ Erro ao gerar QR Code');
-        qrcodeContainer.removeChild(loadingDiv);
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = `
-            padding: 20px;
-            text-align: center;
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
+        qrcodeContainer.innerHTML = `
+            <div style="padding: 20px; text-align: center; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px;">
+                <p style="color: #721c24; margin: 0 0 10px 0;"><strong>❌ Erro ao gerar QR Code</strong></p>
+                <p style="color: #721c24; font-size: 14px; margin: 0;">Tente usar o link direto acima</p>
+            </div>
         `;
-        errorDiv.innerHTML = `
-            <p style="color: #721c24; margin: 0 0 10px 0;"><strong>❌ Erro ao gerar QR Code</strong></p>
-            <p style="color: #721c24; font-size: 14px; margin: 0;">Tente usar o link direto acima</p>
-        `;
-        qrcodeContainer.appendChild(errorDiv);
     };
 }
 
-// Função para testar links gerados
-function testGeneratedLink(linkUrl) {
-    console.log('🧪 Testing generated link:', linkUrl);
+// Enviar evento para webhook
+async function sendEventToWebhook(eventData) {
+    if (!CONFIG.WEBHOOK_URL) return;
     
-    // Abrir em nova aba para testar
-    const testWindow = window.open(linkUrl, '_blank');
-    
-    if (!testWindow) {
-        alert('❌ Popup foi bloqueado! \n\nPara testar:\n1. Permita popups neste site\n2. Ou copie o link e cole em uma nova aba');
-        return false;
+    try {
+        const response = await fetch(CONFIG.WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'event_tracked',
+                eventData: eventData,
+                source: 'invisible_tracking',
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ Evento enviado para webhook');
+        }
+    } catch (error) {
+        console.log('ℹ️ Webhook não disponível:', error.message);
     }
-    
-    return true;
 }
 
 // Event Listeners
@@ -691,95 +857,57 @@ document.getElementById('linkForm').addEventListener('submit', function(event) {
         return;
     }
     
-    // UTM Parameters
-    const utmParams = {
-        utm_source: document.getElementById('utm_source').value.trim(),
-        utm_medium: document.getElementById('utm_medium').value.trim(),
-        utm_campaign: document.getElementById('utm_campaign').value.trim()
+    // Gerar link direto do WhatsApp
+    const whatsappLink = createWhatsAppLink(formData.phone, formData.message);
+    
+    // Criar dados do link para tracking
+    const linkData = {
+        id: generateLinkId(),
+        whatsappUrl: whatsappLink,
+        campaign: formData.campaign,
+        phone: formData.phone,
+        message: formData.message,
+        enableTracking: formData.enableTracking,
+        createdAt: new Date().toISOString(),
+        events: [],
+        deviceInfo: deviceInfo,
+        location: userLocation
     };
     
-    // Gerar link original
-    const originalLink = createWhatsAppLink(formData.phone, formData.message, utmParams);
-    
-    // Gerar link rastreável se necessário
-    let trackingLink = originalLink;
-    let linkId = null;
-    
+    // Salvar dados
     if (formData.enableTracking) {
-        linkId = generateLinkId();
-        trackingLink = createTrackingLink(linkId);
-        
-        // Salvar dados do link
-        const linkData = {
-            id: linkId,
-            originalUrl: originalLink,
-            trackingUrl: trackingLink,
-            campaign: formData.campaign,
-            phone: formData.phone,
-            message: formData.message,
-            utmParams: utmParams,
-            createdAt: new Date().toISOString(),
-            clicks: []
-        };
-        
         saveToStorage(linkData);
-        console.log('✅ Link salvo:', linkData);
+        currentLinkData = linkData;
+        console.log('✅ Link salvo com tracking ativo:', linkData);
     }
     
     // Atualizar interface
-    document.getElementById('originalLink').textContent = originalLink;
-    document.getElementById('originalLinkAction').href = originalLink;
-    
-    document.getElementById('trackingLink').textContent = trackingLink;
-    document.getElementById('trackingLinkAction').href = trackingLink;
+    document.getElementById('whatsappLink').textContent = whatsappLink;
+    document.getElementById('whatsappLinkAction').href = whatsappLink;
     
     // Mostrar/esconder seção de tracking
-    const trackingBox = document.getElementById('trackingLinkBox');
     const analyticsInfo = document.getElementById('analyticsInfo');
-    
-    if (formData.enableTracking) {
-        trackingBox.style.display = 'block';
-        analyticsInfo.style.display = 'block';
-    } else {
-        trackingBox.style.display = 'none';
-        analyticsInfo.style.display = 'none';
-    }
+    analyticsInfo.style.display = formData.enableTracking ? 'block' : 'none';
     
     // Mostrar resultados
     document.getElementById('resultSection').classList.add('show');
     
-    // 🔧 CORREÇÃO PRINCIPAL: QR Code agora usa link rastreável se analytics estiver habilitado
-    const qrLink = formData.enableTracking ? trackingLink : originalLink;
-    generateQRCode(qrLink, formData.enableTracking);
+    // Gerar QR Code
+    generateQRCode(whatsappLink);
     
-    console.log('🔗 QR Code gerado para:', qrLink);
-    console.log('📊 QR Code com tracking:', formData.enableTracking);
-    
-    // Copiar automaticamente o link principal
-    navigator.clipboard.writeText(trackingLink).then(() => {
-        showNotification('✅ Link principal copiado automaticamente!');
-    }).catch(() => {
-        console.log('Clipboard não disponível');
-    });
-    
-    // Enviar para webhook (opcional)
-    if (CONFIG.WEBHOOK_URL) {
-        sendToWebhook({
-            ...formData,
-            originalUrl: originalLink,
-            trackingUrl: trackingLink,
-            linkId: linkId,
-            utmParams: utmParams
+    // Tracking da criação do link
+    if (formData.enableTracking) {
+        trackEvent('link_generated', {
+            source: 'form_submission',
+            campaign: formData.campaign,
+            hasMessage: !!formData.message
         });
     }
     
-    // Analytics do Google (se disponível)
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'link_generated', {
-            event_category: 'WhatsApp',
-            event_label: formData.campaign
-        });
-    }
+    // Copiar automaticamente
+    navigator.clipboard.writeText(whatsappLink).then(() => {
+        showNotification('✅ Link copiado automaticamente!');
+    }).catch(console.log);
 });
 
 // Toggle do analytics
@@ -788,42 +916,36 @@ document.getElementById('enableTracking').addEventListener('change', function() 
     info.style.display = this.checked ? 'block' : 'none';
 });
 
-// Enviar para webhook (com tratamento de erro)
-async function sendToWebhook(data) {
-    try {
-        const response = await fetch(CONFIG.WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                ...data,
-                source: 'github_pages',
-                timestamp: new Date().toISOString()
-            })
-        });
-        
-        if (response.ok) {
-            console.log('✅ Dados enviados para webhook');
-        }
-    } catch (error) {
-        console.log('ℹ️ Webhook não disponível (CORS ou rede)');
-    }
-}
-
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📱 WhatsApp Analytics Generator - GitHub Pages Version v2.1');
-    console.log('🔧 QR Code agora rastreia cliques quando analytics habilitado');
-    console.log('📊 Links salvos:', analyticsData.length);
+    window.pageLoadTime = Date.now();
     
-    // Preencher campos com exemplo se vazio
-    if (!localStorage.getItem('demo_filled')) {
-        document.getElementById('utm_source').value = 'github';
-        document.getElementById('utm_medium').value = 'demo';
-        localStorage.setItem('demo_filled', 'true');
+    console.log('📱 WhatsApp Analytics Generator - Invisible Tracking v3.0');
+    console.log('🔧 Sistema sem redirecionamento ativo');
+    
+    // Inicializar tracking invisível
+    initializeInvisibleTracking();
+    
+    // Dados de exemplo
+    if (!localStorage.getItem('demo_filled_v3')) {
+        document.getElementById('whatsappNumber').value = '47997195432';
+        document.getElementById('message').value = 'Olá! Tenho interesse em seus produtos.';
+        document.getElementById('campaign').value = 'Teste v3.0';
+        localStorage.setItem('demo_filled_v3', 'true');
     }
 });
+
+// Detectar saída da página (possível clique em links externos)
+window.addEventListener('beforeunload', () => {
+    if (currentLinkData && currentLinkData.enableTracking) {
+        trackEvent('page_exit', {
+            source: 'page_unload',
+            timeOnPage: Date.now() - window.pageLoadTime
+        });
+    }
+});
+
+console.log('🚀 Sistema de tracking invisível carregado!');
 </script>
 
 </body>
