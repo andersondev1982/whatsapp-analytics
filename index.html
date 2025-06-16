@@ -339,6 +339,14 @@
             color: #333;
         }
 
+        .qr-analytics-note {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem 0.5rem;
@@ -375,7 +383,7 @@
     <div class="header">
         <h1>📱 WhatsApp Analytics</h1>
         <p class="subtitle">Gere links rastreáveis com analytics completos</p>
-        <span class="badge">🆕 V2.0 - GitHub Pages</span>
+        <span class="badge">🆕 V2.1 - QR Code Corrigido</span>
     </div>
 
     <form id="linkForm">
@@ -460,9 +468,6 @@
 
         <div class="qr-section">
             <div class="qr-title">📱 QR Code para Compartilhamento</div>
-            <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; color: #1565c0;">
-                <strong>💡 Dica:</strong> QR Code usa link direto do WhatsApp para máxima compatibilidade. Para analytics, use os botões "Copiar" acima.
-            </div>
             <div id="qrcode"></div>
         </div>
     </div>
@@ -546,23 +551,51 @@ function showNotification(message) {
     }, 3000);
 }
 
-function generateQRCode(text) {
+function generateQRCode(text, isTracking = false) {
     const qrcodeContainer = document.getElementById('qrcode');
     qrcodeContainer.innerHTML = '';
     
+    // Adicionar nota explicativa sobre o tipo de QR Code
+    const note = document.createElement('div');
+    note.className = 'qr-analytics-note';
+    note.style.cssText = `
+        background: ${isTracking ? '#e3f2fd' : '#fff3cd'};
+        border: 1px solid ${isTracking ? '#90caf9' : '#ffeaa7'};
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: ${isTracking ? '#1565c0' : '#856404'};
+    `;
+    note.innerHTML = isTracking ? 
+        '<strong>📊 QR Code com Analytics:</strong> Este QR Code irá rastrear todos os dados de acesso.' :
+        '<strong>🔗 QR Code Direto:</strong> Este QR Code vai direto para o WhatsApp (sem analytics).';
+    
+    qrcodeContainer.appendChild(note);
+    
     // Verificar se a URL é muito longa para QR Code
     if (text.length > 300) {
-        qrcodeContainer.innerHTML = `
-            <div style="padding: 20px; text-align: center; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
-                <p style="color: #856404; margin: 0 0 10px 0;"><strong>⚠️ Link muito longo para QR Code</strong></p>
-                <p style="color: #856404; font-size: 14px; margin: 0;">Use o botão "Copiar Link" acima para compartilhar</p>
-            </div>
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            padding: 20px;
+            text-align: center;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
         `;
+        errorDiv.innerHTML = `
+            <p style="color: #856404; margin: 0 0 10px 0;"><strong>⚠️ Link muito longo para QR Code</strong></p>
+            <p style="color: #856404; font-size: 14px; margin: 0;">Use o botão "Copiar Link" acima para compartilhar</p>
+        `;
+        qrcodeContainer.appendChild(errorDiv);
         return;
     }
     
     // Mostrar loading
-    qrcodeContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;">🔄 Gerando QR Code...</div>';
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'text-align: center; padding: 20px; color: #6c757d;';
+    loadingDiv.textContent = '🔄 Gerando QR Code...';
+    qrcodeContainer.appendChild(loadingDiv);
     
     // Configurações do QR Code otimizadas
     const qrParams = new URLSearchParams({
@@ -579,6 +612,7 @@ function generateQRCode(text) {
     // Debug: mostrar URL sendo gerada
     console.log('🔗 Gerando QR Code para URL:', text);
     console.log('📏 Tamanho da URL:', text.length, 'caracteres');
+    console.log('📊 QR Code com tracking:', isTracking);
     
     const img = document.createElement('img');
     img.src = qrUrl;
@@ -589,7 +623,7 @@ function generateQRCode(text) {
     img.style.borderRadius = '8px';
     
     img.onload = () => {
-        qrcodeContainer.innerHTML = '';
+        qrcodeContainer.removeChild(loadingDiv);
         qrcodeContainer.appendChild(img);
         
         // Adicionar dica de uso
@@ -606,13 +640,37 @@ function generateQRCode(text) {
     
     img.onerror = () => {
         console.error('❌ Erro ao gerar QR Code');
-        qrcodeContainer.innerHTML = `
-            <div style="padding: 20px; text-align: center; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px;">
-                <p style="color: #721c24; margin: 0 0 10px 0;"><strong>❌ Erro ao gerar QR Code</strong></p>
-                <p style="color: #721c24; font-size: 14px; margin: 0;">Tente usar o link direto acima</p>
-            </div>
+        qrcodeContainer.removeChild(loadingDiv);
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            padding: 20px;
+            text-align: center;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
         `;
+        errorDiv.innerHTML = `
+            <p style="color: #721c24; margin: 0 0 10px 0;"><strong>❌ Erro ao gerar QR Code</strong></p>
+            <p style="color: #721c24; font-size: 14px; margin: 0;">Tente usar o link direto acima</p>
+        `;
+        qrcodeContainer.appendChild(errorDiv);
     };
+}
+
+// Função para testar links gerados
+function testGeneratedLink(linkUrl) {
+    console.log('🧪 Testing generated link:', linkUrl);
+    
+    // Abrir em nova aba para testar
+    const testWindow = window.open(linkUrl, '_blank');
+    
+    if (!testWindow) {
+        alert('❌ Popup foi bloqueado! \n\nPara testar:\n1. Permita popups neste site\n2. Ou copie o link e cole em uma nova aba');
+        return false;
+    }
+    
+    return true;
 }
 
 // Event Listeners
@@ -690,9 +748,12 @@ document.getElementById('linkForm').addEventListener('submit', function(event) {
     // Mostrar resultados
     document.getElementById('resultSection').classList.add('show');
     
-    // Para QR Code, SEMPRE usar o link original (mais confiável)
-    // Links rastreáveis às vezes falham em QR Codes
-    generateQRCode(originalLink);
+    // 🔧 CORREÇÃO PRINCIPAL: QR Code agora usa link rastreável se analytics estiver habilitado
+    const qrLink = formData.enableTracking ? trackingLink : originalLink;
+    generateQRCode(qrLink, formData.enableTracking);
+    
+    console.log('🔗 QR Code gerado para:', qrLink);
+    console.log('📊 QR Code com tracking:', formData.enableTracking);
     
     // Copiar automaticamente o link principal
     navigator.clipboard.writeText(trackingLink).then(() => {
@@ -752,7 +813,8 @@ async function sendToWebhook(data) {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📱 WhatsApp Analytics Generator - GitHub Pages Version');
+    console.log('📱 WhatsApp Analytics Generator - GitHub Pages Version v2.1');
+    console.log('🔧 QR Code agora rastreia cliques quando analytics habilitado');
     console.log('📊 Links salvos:', analyticsData.length);
     
     // Preencher campos com exemplo se vazio
