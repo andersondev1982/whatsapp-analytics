@@ -460,6 +460,9 @@
 
         <div class="qr-section">
             <div class="qr-title">📱 QR Code para Compartilhamento</div>
+            <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; color: #1565c0;">
+                <strong>💡 Dica:</strong> QR Code usa link direto do WhatsApp para máxima compatibilidade. Para analytics, use os botões "Copiar" acima.
+            </div>
             <div id="qrcode"></div>
         </div>
     </div>
@@ -687,8 +690,9 @@ document.getElementById('linkForm').addEventListener('submit', function(event) {
     // Mostrar resultados
     document.getElementById('resultSection').classList.add('show');
     
-    // Gerar QR Code (usar o link rastreável se disponível)
-    generateQRCode(trackingLink);
+    // Para QR Code, SEMPRE usar o link original (mais confiável)
+    // Links rastreáveis às vezes falham em QR Codes
+    generateQRCode(originalLink);
     
     // Copiar automaticamente o link principal
     navigator.clipboard.writeText(trackingLink).then(() => {
