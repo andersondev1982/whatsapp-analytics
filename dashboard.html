@@ -114,6 +114,19 @@
             padding: 2rem;
         }
 
+        .version-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
         .controls-section {
             background: var(--card-bg);
             padding: 1.5rem;
@@ -526,6 +539,26 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            animation: pulse 2s infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         @media (max-width: 1200px) {
             .charts-section {
                 grid-template-columns: 1fr;
@@ -574,6 +607,19 @@
                 margin-bottom: 1rem;
                 display: inline-block;
             }
+
+            .version-badge {
+                position: static;
+                display: inline-block;
+                margin: 1rem auto;
+            }
+
+            .status-indicator {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -582,6 +628,7 @@
 <a href="index.html" class="back-link">← Voltar ao Gerador</a>
 
 <div class="header">
+    <div class="version-badge">📱 v2.1 - Mobile Otimizado</div>
     <div class="header-content">
         <h1>📊 Dashboard Analytics</h1>
         <p class="subtitle">Monitoramento Completo dos Links WhatsApp</p>
@@ -744,6 +791,10 @@
     <div class="loading-spinner"></div>
 </div>
 
+<div class="status-indicator" id="statusIndicator">
+    🔄 Atualizando...
+</div>
+
 <script>
 // Configuração
 const CONFIG = {
@@ -759,13 +810,28 @@ let charts = {
     device: null
 };
 
-// Carregar dados do localStorage
+// 🔧 Carregar dados com fallback aprimorado
 function loadData() {
     try {
-        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
-        analyticsData = data ? JSON.parse(data) : [];
-        console.log('📊 Dados carregados:', analyticsData.length, 'links');
-        return true;
+        // Tentar localStorage primeiro
+        let data = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (data) {
+            analyticsData = JSON.parse(data);
+            console.log('📊 Dados carregados do localStorage:', analyticsData.length, 'links');
+            return true;
+        }
+        
+        // Fallback para sessionStorage
+        data = sessionStorage.getItem(CONFIG.STORAGE_KEY);
+        if (data) {
+            analyticsData = JSON.parse(data);
+            console.log('📊 Dados carregados do sessionStorage:', analyticsData.length, 'links');
+            return true;
+        }
+        
+        analyticsData = [];
+        console.log('📊 Nenhum dado encontrado, iniciando vazio');
+        return false;
     } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
         analyticsData = [];
@@ -780,6 +846,19 @@ function showLoading() {
 
 function hideLoading() {
     document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Atualizar indicador de status
+function updateStatusIndicator(message, isLoading = false) {
+    const indicator = document.getElementById('statusIndicator');
+    indicator.textContent = message;
+    indicator.style.display = isLoading ? 'block' : 'none';
+    
+    if (!isLoading) {
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 3000);
+    }
 }
 
 // Filtrar dados por período
@@ -1154,6 +1233,7 @@ function updateLinksTable(filteredData) {
 
 // Função principal para atualizar dashboard
 function updateDashboard() {
+    updateStatusIndicator('🔄 Atualizando dashboard...', true);
     showLoading();
     
     try {
@@ -1184,10 +1264,12 @@ function updateDashboard() {
         updateLinksTable(filteredData);
         updateCampaignFilter();
         
+        updateStatusIndicator('✅ Dashboard atualizado!', false);
         setTimeout(hideLoading, 500);
         
     } catch (error) {
         console.error('❌ Erro ao atualizar dashboard:', error);
+        updateStatusIndicator('❌ Erro ao carregar dados', false);
         hideLoading();
         alert('Erro ao carregar dados. Tente recarregar a página.');
     }
@@ -1199,6 +1281,8 @@ function exportData() {
         alert('⚠️ Nenhum dado para exportar!');
         return;
     }
+    
+    updateStatusIndicator('📊 Exportando dados...', true);
     
     const csvData = analyticsData.flatMap(link =>
         (link.clicks || []).map(click => ({
@@ -1217,6 +1301,7 @@ function exportData() {
     
     if (csvData.length === 0) {
         alert('⚠️ Nenhum clique registrado para exportar!');
+        updateStatusIndicator('⚠️ Nenhum clique para exportar', false);
         return;
     }
     
@@ -1234,16 +1319,23 @@ function exportData() {
     link.click();
     URL.revokeObjectURL(url);
     
+    updateStatusIndicator('✅ Dados exportados com sucesso!', false);
     console.log('📊 Dados exportados:', csvData.length, 'registros');
 }
 
 // Limpar todos os dados
 function clearAllData() {
     if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nEsta ação não pode ser desfeita e removerá:\n• Todos os links criados\n• Todos os cliques registrados\n• Todo o histórico de analytics')) {
-        localStorage.removeItem(CONFIG.STORAGE_KEY);
-        analyticsData = [];
-        updateDashboard();
-        alert('✅ Todos os dados foram removidos com sucesso!');
+        try {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+            sessionStorage.removeItem(CONFIG.STORAGE_KEY);
+            analyticsData = [];
+            updateDashboard();
+            updateStatusIndicator('✅ Todos os dados foram removidos!', false);
+        } catch (error) {
+            console.error('❌ Erro ao limpar dados:', error);
+            alert('Erro ao limpar dados. Tente novamente.');
+        }
     }
 }
 
@@ -1259,7 +1351,8 @@ function setDefaultDates() {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📊 WhatsApp Analytics Dashboard - GitHub Pages');
+    console.log('📊 WhatsApp Analytics Dashboard - GitHub Pages v2.1');
+    console.log('🔧 Mobile otimizado e fallbacks melhorados');
     
     setDefaultDates();
     updateDashboard();
@@ -1267,7 +1360,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Atualizar automaticamente a cada 30 segundos
     setInterval(() => {
         console.log('🔄 Auto-update dashboard');
-        updateDashboard();
+        loadData(); // Recarregar dados silenciosamente
+        
+        // Só atualizar interface se houver novos dados
+        const currentDataCount = analyticsData.reduce((acc, link) => acc + (link.clicks?.length || 0), 0);
+        if (currentDataCount > 0) {
+            updateDashboard();
+        }
     }, CONFIG.UPDATE_INTERVAL);
     
     // Adicionar event listeners para filtros
