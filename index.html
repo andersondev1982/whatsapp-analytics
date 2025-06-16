@@ -547,21 +547,68 @@ function generateQRCode(text) {
     const qrcodeContainer = document.getElementById('qrcode');
     qrcodeContainer.innerHTML = '';
     
-    // Usar API gratuita do QR Server
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}&bgcolor=f8f9fa&color=25d366`;
+    // Verificar se a URL é muito longa para QR Code
+    if (text.length > 300) {
+        qrcodeContainer.innerHTML = `
+            <div style="padding: 20px; text-align: center; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+                <p style="color: #856404; margin: 0 0 10px 0;"><strong>⚠️ Link muito longo para QR Code</strong></p>
+                <p style="color: #856404; font-size: 14px; margin: 0;">Use o botão "Copiar Link" acima para compartilhar</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Mostrar loading
+    qrcodeContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;">🔄 Gerando QR Code...</div>';
+    
+    // Configurações do QR Code otimizadas
+    const qrParams = new URLSearchParams({
+        size: '250x250',
+        data: text,
+        bgcolor: 'f8f9fa',
+        color: '25d366',
+        ecc: 'M', // Error correction level Medium
+        format: 'png'
+    });
+    
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?${qrParams.toString()}`;
+    
+    // Debug: mostrar URL sendo gerada
+    console.log('🔗 Gerando QR Code para URL:', text);
+    console.log('📏 Tamanho da URL:', text.length, 'caracteres');
     
     const img = document.createElement('img');
     img.src = qrUrl;
     img.alt = 'QR Code';
-    img.style.maxWidth = '100%';
+    img.style.maxWidth = '250px';
     img.style.height = 'auto';
+    img.style.border = '1px solid #dee2e6';
+    img.style.borderRadius = '8px';
     
     img.onload = () => {
+        qrcodeContainer.innerHTML = '';
         qrcodeContainer.appendChild(img);
+        
+        // Adicionar dica de uso
+        const tip = document.createElement('p');
+        tip.style.fontSize = '12px';
+        tip.style.color = '#6c757d';
+        tip.style.marginTop = '10px';
+        tip.style.textAlign = 'center';
+        tip.textContent = '📱 Escaneie com a câmera do seu celular';
+        qrcodeContainer.appendChild(tip);
+        
+        console.log('✅ QR Code gerado com sucesso');
     };
     
     img.onerror = () => {
-        qrcodeContainer.innerHTML = '<p style="color: #dc3545;">❌ Erro ao gerar QR Code</p>';
+        console.error('❌ Erro ao gerar QR Code');
+        qrcodeContainer.innerHTML = `
+            <div style="padding: 20px; text-align: center; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px;">
+                <p style="color: #721c24; margin: 0 0 10px 0;"><strong>❌ Erro ao gerar QR Code</strong></p>
+                <p style="color: #721c24; font-size: 14px; margin: 0;">Tente usar o link direto acima</p>
+            </div>
+        `;
     };
 }
 
