@@ -3,29 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Analytics - WhatsApp Tracking Invisível</title>
-    <meta name="description" content="Dashboard completo de analytics para links do WhatsApp - tracking invisível sem redirecionamento">
-    
-    <!-- Chart.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-    
+    <title>Preview Dashboard - Fase 1</title>
     <style>
         :root {
             --primary-color: #25d366;
             --primary-dark: #128c7e;
-            --secondary-color: #075e54;
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --text-primary: #333333;
             --text-secondary: #6c757d;
             --border-color: #e9ecef;
             --success-color: #28a745;
-            --warning-color: #ffc107;
             --danger-color: #dc3545;
-            --info-color: #17a2b8;
             --shadow: 0 2px 15px rgba(0,0,0,0.1);
             --radius: 12px;
         }
@@ -41,296 +30,27 @@
             background: linear-gradient(135deg, var(--bg-light) 0%, #e3f2fd 100%);
             color: var(--text-primary);
             line-height: 1.6;
+            padding: 2rem;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark), var(--secondary-color));
-            color: white;
-            padding: 2.5rem 0;
+        .preview-header {
             text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
-            animation: float 20s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .header h1 {
-            font-size: 2.8rem;
+        .preview-header h1 {
+            font-size: 2rem;
             margin-bottom: 0.5rem;
-            font-weight: 700;
         }
 
-        .header .subtitle {
-            font-size: 1.2rem;
+        .preview-header .subtitle {
             opacity: 0.9;
-            margin-bottom: 1rem;
-        }
-
-        .header .stats-quick {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1.5rem;
-        }
-
-        .quick-stat {
-            text-align: center;
-        }
-
-        .quick-stat-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        .quick-stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .version-badge {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-        }
-
-        .controls-section {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .controls-group {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .control-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-
-        .control-item label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .control-item select,
-        .control-item input {
-            padding: 0.6rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.9rem;
-            min-width: 140px;
-        }
-
-        .control-item select:focus,
-        .control-item input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.1);
-        }
-
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: var(--text-secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #545b62;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .btn-info {
-            background: var(--info-color);
-            color: white;
-        }
-
-        .btn-info:hover {
-            background: #138496;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.8;
-        }
-
-        .stat-number {
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-change {
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-weight: 500;
-        }
-
-        .stat-change.positive {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success-color);
-        }
-
-        .charts-section {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            position: relative;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .chart-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .chart-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-top: 0.3rem;
+            font-size: 1.1rem;
         }
 
         .data-table {
@@ -338,6 +58,7 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
+            margin-bottom: 2rem;
         }
 
         .data-table-header {
@@ -405,12 +126,7 @@
 
         .badge-info {
             background: rgba(23, 162, 184, 0.1);
-            color: var(--info-color);
-        }
-
-        .badge-warning {
-            background: rgba(255, 193, 7, 0.1);
-            color: #856404;
+            color: #17a2b8;
         }
 
         .badge-success {
@@ -418,948 +134,615 @@
             color: var(--success-color);
         }
 
-        .location-list {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-
-        .location-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-        }
-
-        .location-item:last-child {
-            border-bottom: none;
-        }
-
-        .location-item:hover {
+        .link-preview {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--primary-color);
             background: rgba(37, 211, 102, 0.05);
-            margin: 0 -1rem;
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
         }
 
-        .location-name {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .link-preview:hover {
+            background: rgba(37, 211, 102, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.2);
         }
 
-        .location-count {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
+        .link-preview:active {
+            transform: scale(0.98);
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
+        .message-preview {
+            font-style: italic;
             color: var(--text-secondary);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help;
+            position: relative;
         }
 
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+        /* Tooltip para mensagem */
+        .tooltip {
+            position: relative;
+            display: inline-block;
         }
 
-        .empty-state-title {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 0.8rem;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-style: normal;
+            line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
         }
 
-        .empty-state-text {
-            margin-bottom: 1.5rem;
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
         }
 
-        .loading-overlay {
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Feedback de cópia */
+        .copy-feedback {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            z-index: 1050;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .copy-feedback.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-5px);
+            animation: copyPulse 0.6s ease;
+        }
+
+        @keyframes copyPulse {
+            0% {
+                transform: translateX(-50%) translateY(-5px) scale(0.7);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(-50%) translateY(-8px) scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) translateY(-5px) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .copy-feedback::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--success-color) transparent transparent transparent;
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Modal de Confirmação */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            display: none;
+            backdrop-filter: blur(5px);
         }
 
-        .loading-overlay.show {
+        .modal {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 350px;
+            width: 90%;
+            text-align: center;
+            animation: modalAppear 0.3s ease;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-icon {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--danger-color);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .modal-text {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .modal-actions {
             display: flex;
+            gap: 1rem;
+            justify-content: center;
         }
 
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .btn-cancel {
+            background: var(--text-secondary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .btn-cancel:hover {
+            background: #545b62;
         }
 
-        .back-link {
+        .btn-confirm {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-confirm:hover {
+            background: #c82333;
+        }
+
+        /* Notificação */
+        .notification {
             position: fixed;
             top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--text-primary);
-            padding: 0.8rem 1rem;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 500;
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-            z-index: 100;
-        }
-
-        .back-link:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-
-        .status-indicator {
-            position: fixed;
-            bottom: 20px;
             right: 20px;
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .changes-highlight {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 2rem 0;
+        }
+
+        .changes-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .changes-list {
+            color: #856404;
+            font-size: 0.9rem;
+        }
+
+        .changes-list li {
+            margin: 0.3rem 0;
+        }
+
+        .demo-buttons {
+            text-align: center;
+            margin: 2rem 0;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-demo {
             background: var(--primary-color);
             color: white;
-            padding: 0.8rem 1rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            box-shadow: var(--shadow);
-            animation: pulse 2s infinite;
-            display: none;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        @media (max-width: 1200px) {
-            .charts-section {
-                grid-template-columns: 1fr;
-            }
+        .btn-demo:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.2rem;
+            .table-wrapper {
+                font-size: 0.8rem;
             }
-
-            .header .subtitle {
-                font-size: 1rem;
+            
+            th, td {
+                padding: 0.5rem;
             }
-
-            .header .stats-quick {
-                flex-direction: column;
-                gap: 1rem;
+            
+            .link-preview {
+                max-width: 120px;
             }
-
-            .container {
-                padding: 1rem;
+            
+            .message-preview {
+                max-width: 100px;
             }
-
-            .controls-section {
-                flex-direction: column;
-                align-items: stretch;
+            
+            .tooltip .tooltiptext {
+                width: 250px;
+                margin-left: -125px;
+                font-size: 0.8rem;
             }
-
-            .controls-group {
-                justify-content: space-between;
-            }
-
-            .control-item select,
-            .control-item input {
-                min-width: auto;
-                width: 100%;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .back-link {
-                position: static;
-                margin-bottom: 1rem;
-                display: inline-block;
-            }
-
-            .version-badge {
-                position: static;
-                display: inline-block;
-                margin: 1rem auto;
-            }
-
-            .status-indicator {
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                text-align: center;
+            
+            .copy-feedback {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+                top: -38px;
             }
         }
     </style>
 </head>
 <body>
 
-<a href="index.html" class="back-link">← Voltar ao Gerador</a>
+<div class="preview-header">
+    <h1>🚀 Preview Dashboard - Fase 1</h1>
+    <p class="subtitle">Veja como ficará com as melhorias implementadas</p>
+</div>
 
-<div class="header">
-    <div class="version-badge">🚀 v3.0 - Tracking Invisível</div>
-    <div class="header-content">
-        <h1>📊 Dashboard Analytics</h1>
-        <p class="subtitle">Monitoramento Invisível dos Links WhatsApp</p>
-        <div class="stats-quick">
-            <div class="quick-stat">
-                <span class="quick-stat-number" id="quickTotalLinks">0</span>
-                <span class="quick-stat-label">Links Criados</span>
-            </div>
-            <div class="quick-stat">
-                <span class="quick-stat-number" id="quickTotalEvents">0</span>
-                <span class="quick-stat-label">Eventos Rastreados</span>
-            </div>
-            <div class="quick-stat">
-                <span class="quick-stat-number" id="quickEngagementRate">0%</span>
-                <span class="quick-stat-label">Taxa de Engajamento</span>
-            </div>
+<div class="changes-highlight">
+    <div class="changes-title">
+        ✨ Novas Funcionalidades da Fase 1 (Atualizado)
+    </div>
+    <ul class="changes-list">
+        <li>📝 <strong>Nova Coluna:</strong> "Link/Mensagem" mostra preview do link gerado</li>
+        <li>📋 <strong>Link Clicável:</strong> Clique no link para copiar automaticamente para área de transferência</li>
+        <li>💬 <strong>Tooltip Mensagem:</strong> Hover na mensagem mostra texto completo em tooltip</li>
+        <li>🗑️ <strong>Botão Excluir:</strong> Individual por linha na coluna "Ações"</li>
+        <li>❓ <strong>Popup Simples:</strong> Pergunta direta "Deseja excluir o link?" (compacto e objetivo)</li>
+        <li>✅ <strong>Notificação:</strong> "Link excluído com sucesso!" (mesmo estilo da criação)</li>
+    </ul>
+</div>
+
+<div class="data-table">
+    <div class="data-table-header">
+        <div class="data-table-title">🔗 Histórico Completo de Links e Eventos</div>
+        <div class="data-table-subtitle">Todos os links criados com ações individuais</div>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Campanha</th>
+                    <th>Link/Mensagem</th>
+                    <th>Criado em</th>
+                    <th>Eventos</th>
+                    <th>Último Evento</th>
+                    <th>Dispositivo Principal</th>
+                    <th>Localização</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge badge-primary">Lançamento Produto X</span></td>
+                    <td>
+                        <div class="link-preview" onclick="copyLinkToClipboard('https://wa.me/5547997195432?text=Olá!%20Tenho%20interesse%20em%20seus%20produtos', this)" title="Clique para copiar o link">
+                            wa.me/5547997195432
+                            <div class="copy-feedback">✅ Link Copiado!</div>
+                        </div>
+                        <div class="tooltip">
+                            <div class="message-preview">"Olá! Tenho interesse em seus produtos"</div>
+                            <span class="tooltiptext">
+                                <strong>💬 Mensagem completa:</strong><br>
+                                "Olá! Tenho interesse em seus produtos e gostaria de saber mais informações sobre preços, condições de pagamento e disponibilidade."
+                            </span>
+                        </div>
+                    </td>
+                    <td>16/06/2025<br><small style="color: #6c757d;">14:30</small></td>
+                    <td><span class="badge badge-info">12</span></td>
+                    <td>16/06/2025</td>
+                    <td>📱 mobile</td>
+                    <td><span class="badge badge-success">Balneário Camboriú, Brazil</span></td>
+                    <td>
+                        <button class="btn-delete" onclick="showDeleteModal('Lançamento Produto X')">
+                            🗑️ Excluir
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-primary">Campanha Black Friday</span></td>
+                    <td>
+                        <div class="link-preview" onclick="copyLinkToClipboard('https://wa.me/5547997195432?text=Aproveite%20as%20ofertas%20da%20Black%20Friday!', this)" title="Clique para copiar o link">
+                            wa.me/5547997195432
+                            <div class="copy-feedback">✅ Link Copiado!</div>
+                        </div>
+                        <div class="tooltip">
+                            <div class="message-preview">"Aproveite as ofertas da Black Friday!"</div>
+                            <span class="tooltiptext">
+                                <strong>💬 Mensagem completa:</strong><br>
+                                "Aproveite as ofertas da Black Friday! Descontos de até 50% em todos os produtos. Não perca essa oportunidade única!"
+                            </span>
+                        </div>
+                    </td>
+                    <td>15/06/2025<br><small style="color: #6c757d;">09:15</small></td>
+                    <td><span class="badge badge-info">8</span></td>
+                    <td>15/06/2025</td>
+                    <td>💻 desktop</td>
+                    <td><span class="badge badge-success">São Paulo, Brazil</span></td>
+                    <td>
+                        <button class="btn-delete" onclick="showDeleteModal('Campanha Black Friday')">
+                            🗑️ Excluir
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-primary">Teste v3.0</span></td>
+                    <td>
+                        <div class="link-preview" onclick="copyLinkToClipboard('https://wa.me/5547997195432?text=Testando%20novo%20sistema', this)" title="Clique para copiar o link">
+                            wa.me/5547997195432
+                            <div class="copy-feedback">✅ Link Copiado!</div>
+                        </div>
+                        <div class="tooltip">
+                            <div class="message-preview">"Testando novo sistema"</div>
+                            <span class="tooltiptext">
+                                <strong>💬 Mensagem completa:</strong><br>
+                                "Testando novo sistema de analytics invisível para WhatsApp. Funcionalidade incrível!"
+                            </span>
+                        </div>
+                    </td>
+                    <td>14/06/2025<br><small style="color: #6c757d;">16:45</small></td>
+                    <td><span class="badge badge-info">5</span></td>
+                    <td>14/06/2025</td>
+                    <td>📱 mobile</td>
+                    <td><span class="badge badge-success">Florianópolis, Brazil</span></td>
+                    <td>
+                        <button class="btn-delete" onclick="showDeleteModal('Teste v3.0')">
+                            🗑️ Excluir
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-buttons">
+    <button class="btn-demo" onclick="showDeleteModal('Demo')">
+        🧪 Testar Popup Simplificado
+    </button>
+    <button class="btn-demo" onclick="showSuccessNotification()">
+        ✅ Testar Notificação de Sucesso
+    </button>
+    <button class="btn-demo" onclick="copyLinkToClipboard('https://wa.me/5547997195432?text=Demo', document.querySelector('.link-preview'))">
+        📋 Testar Cópia de Link
+    </button>
+</div>
+
+<!-- Modal de Confirmação (escondido por padrão) -->
+<div class="modal-overlay" id="deleteModal" style="display: none;">
+    <div class="modal">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Excluir Link</div>
+        <div class="modal-text">
+            Deseja excluir o link da campanha "<strong id="campaignName">Nome da Campanha</strong>"?
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="hideDeleteModal()">
+                Cancelar
+            </button>
+            <button class="btn-confirm" onclick="confirmDelete()">
+                Excluir
+            </button>
         </div>
     </div>
 </div>
 
-<div class="container">
-    <!-- Controles -->
-    <div class="controls-section">
-        <div class="controls-group">
-            <div class="control-item">
-                <label>Campanha</label>
-                <select id="campaignFilter">
-                    <option value="">Todas as campanhas</option>
-                </select>
-            </div>
-            <div class="control-item">
-                <label>Tipo de Evento</label>
-                <select id="eventFilter">
-                    <option value="">Todos os eventos</option>
-                    <option value="link_generated">Link Gerado</option>
-                    <option value="link_click">Clique no Link</option>
-                    <option value="qr_visible">QR Code Visto</option>
-                    <option value="possible_qr_scan">Possível QR Scan</option>
-                    <option value="copy_link">Link Copiado</option>
-                </select>
-            </div>
-            <div class="control-item">
-                <label>Período</label>
-                <select id="periodFilter">
-                    <option value="7">Últimos 7 dias</option>
-                    <option value="30">Últimos 30 dias</option>
-                    <option value="90">Últimos 90 dias</option>
-                    <option value="365">Último ano</option>
-                </select>
-            </div>
-        </div>
-        <div class="controls-group">
-            <button class="btn btn-primary" onclick="updateDashboard()">🔍 Atualizar</button>
-            <button class="btn btn-info" onclick="exportData()">📊 Exportar CSV</button>
-            <button class="btn btn-secondary" onclick="window.location.reload()">🔄 Recarregar</button>
-            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar Dados</button>
-        </div>
-    </div>
-
-    <!-- Cards de Estatísticas -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">🔗</div>
-            <div class="stat-number" id="totalLinks">0</div>
-            <div class="stat-label">Links Criados</div>
-            <div class="stat-change positive" id="linksChange">+0 esta semana</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">👆</div>
-            <div class="stat-number" id="totalEvents">0</div>
-            <div class="stat-label">Total de Eventos</div>
-            <div class="stat-change positive" id="eventsChange">+0 hoje</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">👁️</div>
-            <div class="stat-number" id="qrViews">0</div>
-            <div class="stat-label">QR Codes Vistos</div>
-            <div class="stat-change" id="qrChange">Visualizações</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-number" id="avgEventsPerLink">0</div>
-            <div class="stat-label">Média por Link</div>
-            <div class="stat-change" id="avgChange">Engajamento</div>
-        </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="charts-section">
-        <div class="chart-container">
-            <div class="chart-header">
-                <div>
-                    <div class="chart-title">📈 Eventos ao Longo do Tempo</div>
-                    <div class="chart-subtitle">Visualização temporal das interações</div>
-                </div>
-            </div>
-            <canvas id="eventsChart" width="400" height="200"></canvas>
-        </div>
-        
-        <div class="location-list">
-            <div class="chart-header">
-                <div>
-                    <div class="chart-title">🌍 Top Localizações</div>
-                    <div class="chart-subtitle">Países e cidades com mais atividade</div>
-                </div>
-            </div>
-            <div id="locationsList">
-                <div class="empty-state">
-                    <div class="empty-state-icon">🌍</div>
-                    <div class="empty-state-title">Nenhum dado disponível</div>
-                    <div class="empty-state-text">Os dados de localização aparecerão aqui após os primeiros eventos</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gráfico de Dispositivos -->
-    <div class="chart-container">
-        <div class="chart-header">
-            <div>
-                <div class="chart-title">📱 Distribuição por Dispositivos</div>
-                <div class="chart-subtitle">Mobile, Desktop e Tablet</div>
-            </div>
-        </div>
-        <canvas id="deviceChart" width="400" height="200"></canvas>
-    </div>
-
-    <!-- Tabela de Links -->
-    <div class="data-table">
-        <div class="data-table-header">
-            <div class="data-table-title">🔗 Histórico Completo de Links e Eventos</div>
-            <div class="data-table-subtitle">Todos os links criados e eventos rastreados</div>
-        </div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Campanha</th>
-                        <th>Criado em</th>
-                        <th>Eventos</th>
-                        <th>Último Evento</th>
-                        <th>Dispositivo Principal</th>
-                        <th>Localização</th>
-                    </tr>
-                </thead>
-                <tbody id="linksTableBody">
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div class="empty-state-icon">📋</div>
-                            <div class="empty-state-title">Nenhum link encontrado</div>
-                            <div class="empty-state-text">
-                                <a href="index.html" class="btn btn-primary">🔗 Criar Primeiro Link</a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-</div>
-
-<div class="status-indicator" id="statusIndicator">
-    🔄 Atualizando...
+<!-- Notificação de Sucesso (escondida por padrão) -->
+<div class="notification" id="successNotification">
+    🗑️ Link excluído com sucesso!
 </div>
 
 <script>
-// Configuração
-const CONFIG = {
-    STORAGE_KEY: 'whatsapp_analytics_invisible',
-    UPDATE_INTERVAL: 30000, // 30 segundos
-    ANIMATION_DURATION: 500
-};
+let currentCampaignToDelete = '';
 
-// Estado global
-let analyticsData = [];
-let charts = {
-    events: null,
-    device: null
-};
+function showDeleteModal(campaignName) {
+    currentCampaignToDelete = campaignName;
+    document.getElementById('campaignName').textContent = campaignName;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
 
-// Carregar dados do localStorage
-function loadData() {
-    try {
-        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
-        analyticsData = data ? JSON.parse(data) : [];
-        console.log('📊 Dados carregados:', analyticsData.length, 'links');
-        return true;
-    } catch (error) {
-        console.error('❌ Erro ao carregar dados:', error);
-        analyticsData = [];
-        return false;
+function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    currentCampaignToDelete = '';
+}
+
+function confirmDelete() {
+    // Aqui seria executada a lógica real de exclusão
+    // Esconder modal
+    hideDeleteModal();
+    
+    // Mostrar notificação de sucesso
+    showSuccessNotification();
+    
+    // Em uma implementação real, também removeria a linha da tabela
+    // e atualizaria o localStorage
+}
+
+function showSuccessNotification() {
+    const notification = document.getElementById('successNotification');
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+function copyLinkToClipboard(link, element) {
+    // Tentar copiar usando a API moderna
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(link).then(() => {
+            showCopyFeedback(element);
+        }).catch(() => {
+            fallbackCopy(link, element);
+        });
+    } else {
+        fallbackCopy(link, element);
     }
 }
 
-// Mostrar/esconder loading
-function showLoading() {
-    document.getElementById('loadingOverlay').classList.add('show');
+function fallbackCopy(link, element) {
+    // Fallback para navegadores mais antigos
+    const textArea = document.createElement('textarea');
+    textArea.value = link;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    showCopyFeedback(element);
 }
 
-function hideLoading() {
-    document.getElementById('loadingOverlay').classList.remove('show');
-}
-
-// Atualizar indicador de status
-function updateStatusIndicator(message, isLoading = false) {
-    const indicator = document.getElementById('statusIndicator');
-    indicator.textContent = message;
-    indicator.style.display = isLoading ? 'block' : 'none';
-    
-    if (!isLoading) {
+function showCopyFeedback(element) {
+    const feedback = element.querySelector('.copy-feedback');
+    if (feedback) {
+        // Remover classe anterior se existir
+        feedback.classList.remove('show');
+        
+        // Pequeno delay para garantir que a animação funciona
         setTimeout(() => {
-            indicator.style.display = 'none';
+            feedback.classList.add('show');
+        }, 10);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            feedback.classList.remove('show');
         }, 3000);
     }
 }
 
-// Filtrar dados por período
-function filterDataByPeriod(days) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    
-    return analyticsData.filter(link => {
-        const linkDate = new Date(link.createdAt);
-        return linkDate >= cutoffDate;
-    });
-}
-
-// Filtrar dados por campanha
-function filterDataByCampaign(data, campaign) {
-    if (!campaign) return data;
-    return data.filter(link => link.campaign === campaign);
-}
-
-// Filtrar eventos por tipo
-function filterEventsByType(events, eventType) {
-    if (!eventType) return events;
-    return events.filter(event => event.eventType === eventType);
-}
-
-// Atualizar filtros
-function updateCampaignFilter() {
-    const select = document.getElementById('campaignFilter');
-    const campaigns = [...new Set(analyticsData.map(item => item.campaign).filter(Boolean))];
-    
-    const currentValue = select.value;
-    select.innerHTML = '<option value="">Todas as campanhas</option>';
-    
-    campaigns.forEach(campaign => {
-        const option = document.createElement('option');
-        option.value = campaign;
-        option.textContent = campaign;
-        if (campaign === currentValue) option.selected = true;
-        select.appendChild(option);
-    });
-}
-
-// Calcular estatísticas
-function calculateStats(filteredData) {
-    const totalLinks = filteredData.length;
-    const allEvents = filteredData.flatMap(link => link.events || []);
-    const totalEvents = allEvents.length;
-    
-    // Eventos por tipo
-    const eventsByType = allEvents.reduce((acc, event) => {
-        acc[event.eventType] = (acc[event.eventType] || 0) + 1;
-        return acc;
-    }, {});
-    
-    const qrViews = eventsByType['qr_visible'] || 0;
-    const linkClicks = eventsByType['link_click'] || 0;
-    const qrScans = eventsByType['possible_qr_scan'] || 0;
-    
-    const avgEventsPerLink = totalLinks > 0 ? (totalEvents / totalLinks).toFixed(1) : 0;
-    const engagementRate = totalLinks > 0 ? (((linkClicks + qrScans) / totalLinks) * 100).toFixed(1) : 0;
-    
-    // Estatísticas de crescimento
-    const today = new Date().toISOString().split('T')[0];
-    const thisWeek = new Date();
-    thisWeek.setDate(thisWeek.getDate() - 7);
-    
-    const todayEvents = allEvents.filter(event => event.timestamp.split('T')[0] === today).length;
-    const thisWeekLinks = filteredData.filter(link => new Date(link.createdAt) >= thisWeek).length;
-    
-    return { 
-        totalLinks, 
-        totalEvents, 
-        qrViews,
-        linkClicks,
-        qrScans,
-        avgEventsPerLink, 
-        engagementRate,
-        todayEvents,
-        thisWeekLinks,
-        eventsByType
-    };
-}
-
-// Atualizar cards de estatísticas
-function updateStatsCards(stats) {
-    // Cards principais
-    document.getElementById('totalLinks').textContent = stats.totalLinks;
-    document.getElementById('totalEvents').textContent = stats.totalEvents;
-    document.getElementById('qrViews').textContent = stats.qrViews;
-    document.getElementById('avgEventsPerLink').textContent = stats.avgEventsPerLink;
-    
-    // Quick stats no header
-    document.getElementById('quickTotalLinks').textContent = stats.totalLinks;
-    document.getElementById('quickTotalEvents').textContent = stats.totalEvents;
-    document.getElementById('quickEngagementRate').textContent = stats.engagementRate + '%';
-    
-    // Indicadores de mudança
-    document.getElementById('linksChange').textContent = `+${stats.thisWeekLinks} esta semana`;
-    document.getElementById('eventsChange').textContent = `+${stats.todayEvents} hoje`;
-    document.getElementById('qrChange').textContent = `${stats.qrScans} possíveis scans`;
-    document.getElementById('avgChange').textContent = stats.avgEventsPerLink >= 3 ? 'Alto' : stats.avgEventsPerLink >= 1 ? 'Médio' : 'Baixo';
-}
-
-// Preparar dados para gráfico de eventos
-function prepareEventsChartData(filteredData, days) {
-    const dates = [];
-    const now = new Date();
-    
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        dates.push(date.toISOString().split('T')[0]);
+// Fechar modal clicando fora dele
+document.getElementById('deleteModal').addEventListener('click', (e) => {
+    if (e.target.id === 'deleteModal') {
+        hideDeleteModal();
     }
-    
-    const eventsByDate = dates.map(date => {
-        const dayEvents = filteredData.flatMap(link => link.events || [])
-            .filter(event => event.timestamp.split('T')[0] === date);
-        return dayEvents.length;
-    });
-    
-    return { dates, eventsByDate };
-}
-
-// Preparar dados de dispositivos
-function prepareDeviceChartData(filteredData) {
-    const allEvents = filteredData.flatMap(link => link.events || []);
-    const deviceCounts = allEvents.reduce((acc, event) => {
-        const device = event.device?.deviceType || 'unknown';
-        acc[device] = (acc[device] || 0) + 1;
-        return acc;
-    }, {});
-    
-    return deviceCounts;
-}
-
-// Preparar dados de localização
-function prepareLocationData(filteredData) {
-    const allEvents = filteredData.flatMap(link => link.events || []);
-    const locationCounts = allEvents.reduce((acc, event) => {
-        const location = `${event.location?.city || 'Unknown'}, ${event.location?.region || 'Unknown'}, ${event.location?.country || 'Unknown'}`;
-        acc[location] = (acc[location] || 0) + 1;
-        return acc;
-    }, {});
-    
-    return Object.entries(locationCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10);
-}
-
-// Atualizar gráfico de eventos
-function updateEventsChart(chartData) {
-    const ctx = document.getElementById('eventsChart').getContext('2d');
-    
-    if (charts.events) {
-        charts.events.destroy();
-    }
-    
-    charts.events = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.dates.map(date => {
-                const d = new Date(date);
-                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-            }),
-            datasets: [{
-                label: 'Eventos',
-                data: chartData.eventsByDate,
-                borderColor: 'rgb(37, 211, 102)',
-                backgroundColor: 'rgba(37, 211, 102, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: 'rgb(37, 211, 102)',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 8,
-                    displayColors: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        color: '#6c757d'
-                    }
-                },
-                x: {
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        color: '#6c757d'
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Atualizar gráfico de dispositivos
-function updateDeviceChart(deviceData) {
-    const ctx = document.getElementById('deviceChart').getContext('2d');
-    
-    if (charts.device) {
-        charts.device.destroy();
-    }
-    
-    const deviceIcons = {
-        mobile: '📱 Mobile',
-        desktop: '💻 Desktop',
-        tablet: '📟 Tablet',
-        unknown: '❓ Desconhecido'
-    };
-    
-    const labels = Object.keys(deviceData).map(device => deviceIcons[device] || device);
-    const data = Object.values(deviceData);
-    const colors = ['#25d366', '#128c7e', '#075e54', '#6c757d'];
-    
-    if (data.length === 0) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.font = '16px Arial';
-        ctx.fillStyle = '#6c757d';
-        ctx.textAlign = 'center';
-        ctx.fillText('Nenhum dado disponível', ctx.canvas.width / 2, ctx.canvas.height / 2);
-        return;
-    }
-    
-    charts.device = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors.slice(0, data.length),
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed * 100) / total).toFixed(1);
-                            return `${context.label}: ${context.parsed} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Atualizar lista de localizações
-function updateLocationsList(locationData) {
-    const container = document.getElementById('locationsList');
-    
-    if (locationData.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">🌍</div>
-                <div class="empty-state-title">Nenhum dado disponível</div>
-                <div class="empty-state-text">Os dados de localização aparecerão aqui após os primeiros eventos</div>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = locationData.map(([location, count]) => `
-        <div class="location-item">
-            <div class="location-name">
-                🌍 ${location}
-            </div>
-            <div class="location-count">${count}</div>
-        </div>
-    `).join('');
-}
-
-// Atualizar tabela de links
-function updateLinksTable(filteredData) {
-    const tbody = document.getElementById('linksTableBody');
-    
-    if (filteredData.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <div class="empty-state-title">Nenhum link encontrado</div>
-                    <div class="empty-state-text">
-                        <a href="index.html" class="btn btn-primary">🔗 Criar Primeiro Link</a>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = filteredData.map(link => {
-        const eventCount = link.events ? link.events.length : 0;
-        const lastEvent = link.events && link.events.length > 0 
-            ? new Date(link.events[link.events.length - 1].timestamp).toLocaleDateString('pt-BR')
-            : 'Nenhum';
-        
-        // Dispositivo mais usado
-        const deviceCounts = link.events ? link.events.reduce((acc, event) => {
-            const device = event.device?.deviceType || 'unknown';
-            acc[device] = (acc[device] || 0) + 1;
-            return acc;
-        }, {}) : {};
-        
-        const topDevice = Object.keys(deviceCounts).length > 0
-            ? Object.entries(deviceCounts).sort(([,a], [,b]) => b - a)[0][0]
-            : 'N/A';
-        
-        const deviceIcon = {
-            mobile: '📱',
-            desktop: '💻',
-            tablet: '📟'
-        }[topDevice] || '❓';
-        
-        // Localização principal
-        const location = link.location ? `${link.location.city}, ${link.location.country}` : 'Desconhecida';
-        
-        return `
-            <tr>
-                <td><span class="badge badge-primary">${link.campaign || 'Sem nome'}</span></td>
-                <td>${new Date(link.createdAt).toLocaleDateString('pt-BR')} <br>
-                    <small style="color: #6c757d;">${new Date(link.createdAt).toLocaleTimeString('pt-BR')}</small>
-                </td>
-                <td><span class="badge badge-info">${eventCount}</span></td>
-                <td>${lastEvent}</td>
-                <td>${deviceIcon} ${topDevice}</td>
-                <td><span class="badge badge-success">${location}</span></td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// Função principal para atualizar dashboard
-function updateDashboard() {
-    updateStatusIndicator('🔄 Atualizando dashboard...', true);
-    showLoading();
-    
-    try {
-        loadData();
-        
-        const selectedCampaign = document.getElementById('campaignFilter').value;
-        const selectedPeriod = parseInt(document.getElementById('periodFilter').value);
-        
-        // Filtrar dados
-        let filteredData = filterDataByPeriod(selectedPeriod);
-        filteredData = filterDataByCampaign(filteredData, selectedCampaign);
-        
-        console.log('📊 Dados filtrados:', filteredData.length, 'links');
-        
-        // Atualizar todos os componentes
-        const stats = calculateStats(filteredData);
-        updateStatsCards(stats);
-        
-        const eventsChartData = prepareEventsChartData(filteredData, selectedPeriod);
-        updateEventsChart(eventsChartData);
-        
-        const deviceData = prepareDeviceChartData(filteredData);
-        updateDeviceChart(deviceData);
-        
-        const locationData = prepareLocationData(filteredData);
-        updateLocationsList(locationData);
-        
-        updateLinksTable(filteredData);
-        updateCampaignFilter();
-        
-        updateStatusIndicator('✅ Dashboard atualizado!', false);
-        setTimeout(hideLoading, 500);
-        
-    } catch (error) {
-        console.error('❌ Erro ao atualizar dashboard:', error);
-        updateStatusIndicator('❌ Erro ao carregar dados', false);
-        hideLoading();
-        alert('Erro ao carregar dados. Tente recarregar a página.');
-    }
-}
-
-// Exportar dados para CSV
-function exportData() {
-    if (analyticsData.length === 0) {
-        alert('⚠️ Nenhum dado para exportar!');
-        return;
-    }
-    
-    updateStatusIndicator('📊 Exportando dados...', true);
-    
-    const csvData = analyticsData.flatMap(link =>
-        (link.events || []).map(event => ({
-            'Campanha': link.campaign || 'Sem nome',
-            'Link Criado': link.createdAt,
-            'Evento': event.eventType,
-            'Timestamp': event.timestamp,
-            'Dispositivo': event.device?.deviceType || 'unknown',
-            'Browser': event.device?.browser || 'unknown',
-            'Sistema': event.device?.os || 'unknown',
-            'País': event.location?.country || 'Unknown',
-            'Região': event.location?.region || 'Unknown',
-            'Cidade': event.location?.city || 'Unknown',
-            'IP': event.location?.ip || 'unknown',
-            'Referrer': event.referrer || 'direct',
-            'Origem': event.source || 'unknown'
-        }))
-    );
-    
-    if (csvData.length === 0) {
-        alert('⚠️ Nenhum evento registrado para exportar!');
-        updateStatusIndicator('⚠️ Nenhum evento para exportar', false);
-        return;
-    }
-    
-    const headers = Object.keys(csvData[0]);
-    const csv = [
-        headers.join(','),
-        ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `whatsapp-invisible-analytics-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    updateStatusIndicator('✅ Dados exportados com sucesso!', false);
-    console.log('📊 Dados exportados:', csvData.length, 'eventos');
-}
-
-// Limpar todos os dados
-function clearAllData() {
-    if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nEsta ação não pode ser desfeita e removerá:\n• Todos os links criados\n• Todos os eventos rastreados\n• Todo o histórico de analytics')) {
-        try {
-            localStorage.removeItem(CONFIG.STORAGE_KEY);
-            analyticsData = [];
-            updateDashboard();
-            updateStatusIndicator('✅ Todos os dados foram removidos!', false);
-        } catch (error) {
-            console.error('❌ Erro ao limpar dados:', error);
-            alert('Erro ao limpar dados. Tente novamente.');
-        }
-    }
-}
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('📊 WhatsApp Analytics Dashboard - Invisible Tracking v3.0');
-    console.log('🚀 Sistema sem redirecionamento ativo');
-    
-    updateDashboard();
-    
-    // Atualizar automaticamente a cada 30 segundos
-    setInterval(() => {
-        console.log('🔄 Auto-update dashboard');
-        loadData(); // Recarregar dados silenciosamente
-        
-        // Só atualizar interface se houver novos dados
-        const currentEventCount = analyticsData.reduce((acc, link) => acc + (link.events?.length || 0), 0);
-        if (currentEventCount > 0) {
-            updateDashboard();
-        }
-    }, CONFIG.UPDATE_INTERVAL);
-    
-    // Adicionar event listeners para filtros
-    document.getElementById('campaignFilter').addEventListener('change', updateDashboard);
-    document.getElementById('periodFilter').addEventListener('change', updateDashboard);
-    document.getElementById('eventFilter').addEventListener('change', updateDashboard);
 });
 
-// Detectar mudanças no localStorage (quando novos dados são adicionados)
-window.addEventListener('storage', (e) => {
-    if (e.key === CONFIG.STORAGE_KEY) {
-        console.log('🔄 Dados atualizados externamente, recarregando dashboard');
-        updateDashboard();
+// Fechar modal com ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        hideDeleteModal();
     }
 });
 </script>
