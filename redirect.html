@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecionando para WhatsApp...</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Preload WhatsApp domain -->
+    <link rel="preconnect" href="https://wa.me">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #25d366, #128c7e, #075e54);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            overflow: hidden;
+        }
+
+        .redirect-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 90%;
+            animation: slideIn 0.6s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .whatsapp-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: progress 3s ease-in-out;
+            transform-origin: left;
+        }
+
+        @keyframes progress {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(0.7); }
+            100% { transform: scaleX(1); }
+        }
+
+        .fallback-link {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fallback-link a {
+            color: white;
+            text-decoration: none;
+            border: 2px solid white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .fallback-link a:hover {
+            background: white;
+            color: #25d366;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .analytics-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            max-width: 250px;
+            display: none;
+            animation: slideInRight 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .analytics-status.show {
+            display: block;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.3rem 0;
+        }
+
+        .status-label {
+            opacity: 0.8;
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .error-container {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-container.show {
+            display: block;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #25d366;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            .redirect-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+            
+            .whatsapp-icon {
+                font-size: 3rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .loading-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="redirect-container" id="mainContainer">
+    <div class="whatsapp-icon">📱</div>
+    <h1>Redirecionando para WhatsApp</h1>
+    
+    <div class="loading-text" id="loadingText">
+        <span class="loading-spinner"></span>
+        Carregando...
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    
+    <div class="fallback-link" id="fallbackLink">
+        <p style="margin-bottom: 1rem; opacity: 0.9;">Não foi redirecionado automaticamente?</p>
+        <a href="#" id="manualLink" target="_blank">
+            🚀 Abrir WhatsApp Manualmente
+        </a>
+    </div>
+</div>
+
+<div class="error-container" id="errorContainer">
+    <div class="error-icon">⚠️</div>
+    <h2>Ops! Algo deu errado</h2>
+    <p>Não conseguimos encontrar este link.</p>
+    <button class="retry-btn" onclick="window.location.reload()">
+        🔄 Tentar Novamente
+    </button>
+    <div style="margin-top: 1rem;">
+        <a href="index.html" style="color: white; opacity: 0.8;">← Voltar ao Gerador</a>
+    </div>
+</div>
+
+<div class="analytics-status" id="analyticsStatus">
+    <div style="font-weight: 600; margin-bottom: 0.5rem;">📊 Analytics Capturados:</div>
+    <div class="status-item">
+        <span class="status-label">Dispositivo:</span>
+        <span class="status-value" id="deviceType">-</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Browser:</span>
+        <span class="status-value" id="browserType">-</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Localização:</span>
+        <span class="status-value" id="userLocation">-</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Timestamp:</span>
+        <span class="status-value" id="timestamp">-</span>
+    </div>
+</div>
+
+<script>
+// Configurações
+const CONFIG = {
+    STORAGE_KEY: 'whatsapp_analytics_github',
+    REDIRECT_DELAY: 2500, // 2.5 segundos
+    FALLBACK_DELAY: 5000, // 5 segundos
+    WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/analytics', // Opcional
+    DEBUG: new URLSearchParams(window.location.search).get('debug') === 'true'
+};
+
+// Estado da aplicação
+let redirectData = {
+    linkId: null,
+    originalUrl: null,
+    startTime: Date.now()
+};
+
+// Utilitários de detecção
+function getDeviceType() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet';
+    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(ua)) return 'mobile';
+    return 'desktop';
+}
+
+function getBrowserInfo() {
+    const ua = navigator.userAgent;
+    if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Edg')) return 'Edge';
+    if (ua.includes('Opera') || ua.includes('OPR')) return 'Opera';
+    return 'Unknown';
+}
+
+function getOperatingSystem() {
+    const ua = navigator.userAgent;
+    if (ua.includes('Windows')) return 'Windows';
+    if (ua.includes('Mac OS')) return 'macOS';
+    if (ua.includes('Linux')) return 'Linux';
+    if (ua.includes('Android')) return 'Android';
+    if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+    return 'Unknown';
+}
+
+// Geolocalização via IP (com fallback)
+async function getLocationData() {
+    const fallbackLocation = {
+        country: 'Brasil',
+        city: 'São Paulo',
+        region: 'SP',
+        ip: 'unknown'
+    };
+
+    try {
+        // Tentar várias APIs de geolocalização
+        const apis = [
+            'https://ipapi.co/json/',
+            'https://api.ipify.org?format=json', // Backup apenas IP
+        ];
+
+        for (const api of apis) {
+            try {
+                const response = await fetch(api, { 
+                    timeout: 3000,
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.country_name || data.country) {
+                        return {
+                            country: data.country_name || data.country || 'Unknown',
+                            city: data.city || 'Unknown',
+                            region: data.region || data.region_code || 'Unknown',
+                            ip: data.ip || 'unknown'
+                        };
+                    } else if (data.ip) {
+                        // API que retorna apenas IP
+                        return { ...fallbackLocation, ip: data.ip };
+                    }
+                }
+            } catch (error) {
+                console.log(`API ${api} failed:`, error);
+                continue;
+            }
+        }
+        
+        return fallbackLocation;
+    } catch (error) {
+        console.log('Todas as APIs de geolocalização falharam, usando fallback');
+        return fallbackLocation;
+    }
+}
+
+// Coletar dados completos de analytics
+async function collectAnalyticsData() {
+    const deviceType = getDeviceType();
+    const browser = getBrowserInfo();
+    const os = getOperatingSystem();
+    const location = await getLocationData();
+    
+    const analyticsData = {
+        linkId: redirectData.linkId,
+        timestamp: new Date().toISOString(),
+        deviceType: deviceType,
+        browser: browser,
+        os: os,
+        screenResolution: `${screen.width}x${screen.height}`,
+        windowSize: `${window.innerWidth}x${window.innerHeight}`,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        referrer: document.referrer || 'direct',
+        userAgent: navigator.userAgent,
+        location: location,
+        sessionData: {
+            sessionStart: redirectData.startTime,
+            loadTime: Date.now() - redirectData.startTime,
+            pageVisibility: document.visibilityState
+        }
+    };
+    
+    return analyticsData;
+}
+
+// Atualizar interface com dados coletados
+function updateAnalyticsDisplay(data) {
+    if (CONFIG.DEBUG) {
+        document.getElementById('deviceType').textContent = data.deviceType;
+        document.getElementById('browserType').textContent = data.browser;
+        document.getElementById('userLocation').textContent = `${data.location.city}, ${data.location.country}`;
+        document.getElementById('timestamp').textContent = new Date().toLocaleTimeString('pt-BR');
+        document.getElementById('analyticsStatus').classList.add('show');
+    }
+}
+
+// Salvar analytics no localStorage
+function saveAnalyticsData(data) {
+    try {
+        const storedData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+        const linkIndex = storedData.findIndex(link => link.id === data.linkId);
+        
+        if (linkIndex !== -1) {
+            if (!storedData[linkIndex].clicks) {
+                storedData[linkIndex].clicks = [];
+            }
+            storedData[linkIndex].clicks.push(data);
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(storedData));
+            console.log('✅ Analytics data saved locally');
+        } else {
+            console.warn('⚠️ Link ID not found in stored data');
+        }
+    } catch (error) {
+        console.error('❌ Error saving analytics data:', error);
+    }
+}
+
+// Enviar dados para webhook (opcional)
+async function sendToWebhook(data) {
+    if (!CONFIG.WEBHOOK_URL) return;
+    
+    try {
+        const response = await fetch(CONFIG.WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'click_tracked',
+                linkId: data.linkId,
+                clickData: data,
+                source: 'github_pages',
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ Analytics sent to webhook');
+        } else {
+            console.log('⚠️ Webhook response not OK');
+        }
+    } catch (error) {
+        console.log('ℹ️ Webhook not reachable (CORS or network)');
+    }
+}
+
+// Atualizar texto de loading
+function updateLoadingText() {
+    const messages = [
+        'Carregando...',
+        'Capturando analytics...',
+        'Preparando redirecionamento...',
+        'Conectando ao WhatsApp...'
+    ];
+    
+    let index = 0;
+    const interval = setInterval(() => {
+        document.getElementById('loadingText').innerHTML = `
+            <span class="loading-spinner"></span>
+            ${messages[index]}
+        `;
+        index = (index + 1) % messages.length;
+    }, 600);
+    
+    // Parar animação após redirecionamento
+    setTimeout(() => clearInterval(interval), CONFIG.REDIRECT_DELAY);
+}
+
+// Executar redirecionamento
+function performRedirect() {
+    if (redirectData.originalUrl) {
+        console.log('🚀 Redirecting to:', redirectData.originalUrl);
+        
+        // Tentar redirecionamento
+        try {
+            window.location.href = redirectData.originalUrl;
+        } catch (error) {
+            console.error('❌ Redirect failed:', error);
+            showFallbackLink();
+        }
+    } else {
+        showError();
+    }
+}
+
+// Mostrar link manual
+function showFallbackLink() {
+    document.getElementById('fallbackLink').style.display = 'block';
+    document.getElementById('manualLink').href = redirectData.originalUrl;
+}
+
+// Mostrar erro
+function showError() {
+    document.getElementById('mainContainer').style.display = 'none';
+    document.getElementById('errorContainer').classList.add('show');
+}
+
+// Função principal
+async function initializeRedirect() {
+    try {
+        // 1. Extrair parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        redirectData.linkId = urlParams.get('id');
+        
+        if (!redirectData.linkId) {
+            console.error('❌ No link ID provided');
+            showError();
+            return;
+        }
+        
+        console.log('🔍 Processing link ID:', redirectData.linkId);
+        
+        // 2. Buscar dados do link no localStorage
+        const storedData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+        const linkData = storedData.find(link => link.id === redirectData.linkId);
+        
+        if (!linkData) {
+            console.error('❌ Link data not found');
+            showError();
+            return;
+        }
+        
+        redirectData.originalUrl = linkData.originalUrl;
+        console.log('✅ Link data found:', linkData);
+        
+        // 3. Iniciar animações
+        updateLoadingText();
+        
+        // 4. Coletar dados de analytics
+        const analyticsData = await collectAnalyticsData();
+        console.log('📊 Analytics collected:', analyticsData);
+        
+        // 5. Atualizar interface
+        updateAnalyticsDisplay(analyticsData);
+        
+        // 6. Salvar dados localmente
+        saveAnalyticsData(analyticsData);
+        
+        // 7. Enviar para webhook (opcional)
+        await sendToWebhook(analyticsData);
+        
+        // 8. Executar redirecionamento após delay
+        setTimeout(performRedirect, CONFIG.REDIRECT_DELAY);
+        
+        // 9. Mostrar link manual como fallback
+        setTimeout(showFallbackLink, CONFIG.FALLBACK_DELAY);
+        
+    } catch (error) {
+        console.error('❌ Critical error in redirect process:', error);
+        showError();
+    }
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', initializeRedirect);
+
+// Detectar quando usuário sai da página
+window.addEventListener('beforeunload', () => {
+    console.log('📱 User redirected to WhatsApp');
+});
+
+// Detectar se usuário voltou (possível falha no redirecionamento)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && Date.now() - redirectData.startTime > 3000) {
+        console.log('👁️ User returned to page, showing manual link');
+        showFallbackLink();
+    }
+});
+
+// Detectar clique no link manual
+document.getElementById('manualLink').addEventListener('click', () => {
+    console.log('🖱️ Manual link clicked');
+    
+    // Analytics do clique manual
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'manual_redirect', {
+            event_category: 'WhatsApp',
+            event_label: redirectData.linkId
+        });
+    }
+});
+
+// Debug info
+if (CONFIG.DEBUG) {
+    console.log('🐛 Debug mode enabled');
+    console.log('🔧 Config:', CONFIG);
+}
+</script>
+
+</body>
+</html>
