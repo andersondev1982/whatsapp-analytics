@@ -226,6 +226,25 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
+        .debug-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            font-size: 10px;
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
+
         @media (max-width: 480px) {
             .redirect-container {
                 padding: 2rem 1.5rem;
@@ -242,6 +261,13 @@
             
             .loading-text {
                 font-size: 1rem;
+            }
+
+            .analytics-status {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
             }
         }
     </style>
@@ -301,12 +327,16 @@
     </div>
 </div>
 
+<div class="debug-info" id="debugInfo">
+    <pre id="debugContent"></pre>
+</div>
+
 <script>
 // Configurações
 const CONFIG = {
     STORAGE_KEY: 'whatsapp_analytics_github',
-    REDIRECT_DELAY: 2500, // 2.5 segundos
-    FALLBACK_DELAY: 5000, // 5 segundos
+    REDIRECT_DELAY: 2500, // 2.5 segundos padrão
+    FALLBACK_DELAY: 5000, // 5 segundos padrão
     WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/analytics', // Opcional
     DEBUG: new URLSearchParams(window.location.search).get('debug') === 'true'
 };
@@ -315,14 +345,26 @@ const CONFIG = {
 let redirectData = {
     linkId: null,
     originalUrl: null,
-    startTime: Date.now()
+    startTime: Date.now(),
+    isMobile: false
 };
 
-// Utilitários de detecção
+// 🔧 Melhorar detecção de dispositivo
 function getDeviceType() {
     const ua = navigator.userAgent.toLowerCase();
-    if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet';
-    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(ua)) return 'mobile';
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Detecção mais precisa
+    if (/ipad|tablet|kindle|playbook|silk/i.test(ua) || 
+        (isTouchDevice && window.innerWidth > 600)) {
+        return 'tablet';
+    }
+    
+    if (/mobile|android|iphone|ipod|phone|blackberry|opera mini|iemobile|mobile/i.test(ua) ||
+        (isTouchDevice && window.innerWidth <= 600)) {
+        return 'mobile';
+    }
+    
     return 'desktop';
 }
 
@@ -346,7 +388,7 @@ function getOperatingSystem() {
     return 'Unknown';
 }
 
-// Geolocalização via IP (com fallback)
+// Geolocalização via IP (com fallback melhorado)
 async function getLocationData() {
     const fallbackLocation = {
         country: 'Brasil',
@@ -356,20 +398,25 @@ async function getLocationData() {
     };
 
     try {
-        // Tentar várias APIs de geolocalização
+        // Tentar várias APIs de geolocalização com timeout
         const apis = [
             'https://ipapi.co/json/',
-            'https://api.ipify.org?format=json', // Backup apenas IP
+            'https://api.ipify.org?format=json'
         ];
 
         for (const api of apis) {
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                
                 const response = await fetch(api, { 
-                    timeout: 3000,
+                    signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
                     }
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -387,7 +434,7 @@ async function getLocationData() {
                     }
                 }
             } catch (error) {
-                console.log(`API ${api} failed:`, error);
+                console.log(`API ${api} failed:`, error.message);
                 continue;
             }
         }
@@ -422,7 +469,8 @@ async function collectAnalyticsData() {
         sessionData: {
             sessionStart: redirectData.startTime,
             loadTime: Date.now() - redirectData.startTime,
-            pageVisibility: document.visibilityState
+            pageVisibility: document.visibilityState,
+            isMobile: redirectData.isMobile
         }
     };
     
@@ -431,7 +479,7 @@ async function collectAnalyticsData() {
 
 // Atualizar interface com dados coletados
 function updateAnalyticsDisplay(data) {
-    if (CONFIG.DEBUG) {
+    if (CONFIG.DEBUG || redirectData.isMobile) {
         document.getElementById('deviceType').textContent = data.deviceType;
         document.getElementById('browserType').textContent = data.browser;
         document.getElementById('userLocation').textContent = `${data.location.city}, ${data.location.country}`;
@@ -440,10 +488,28 @@ function updateAnalyticsDisplay(data) {
     }
 }
 
-// Salvar analytics no localStorage
-function saveAnalyticsData(data) {
+// 🔧 Melhorar salvamento de analytics com fallbacks
+function getStoredDataSafely() {
     try {
-        const storedData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (error) {
+        console.error('❌ localStorage error:', error);
+        
+        // Tentar sessionStorage como fallback
+        try {
+            const sessionData = sessionStorage.getItem(CONFIG.STORAGE_KEY);
+            return sessionData ? JSON.parse(sessionData) : [];
+        } catch (sessionError) {
+            console.error('❌ sessionStorage also failed:', sessionError);
+            return [];
+        }
+    }
+}
+
+function saveAnalyticsDataSafely(data) {
+    try {
+        const storedData = getStoredDataSafely();
         const linkIndex = storedData.findIndex(link => link.id === data.linkId);
         
         if (linkIndex !== -1) {
@@ -451,13 +517,29 @@ function saveAnalyticsData(data) {
                 storedData[linkIndex].clicks = [];
             }
             storedData[linkIndex].clicks.push(data);
-            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(storedData));
-            console.log('✅ Analytics data saved locally');
+            
+            // Tentar salvar no localStorage primeiro
+            try {
+                localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(storedData));
+                console.log('✅ Analytics saved to localStorage');
+            } catch (localError) {
+                console.warn('⚠️ localStorage failed, trying sessionStorage');
+                sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(storedData));
+                console.log('✅ Analytics saved to sessionStorage');
+            }
         } else {
-            console.warn('⚠️ Link ID not found in stored data');
+            console.warn('⚠️ Link ID not found:', data.linkId);
+            console.log('Available link IDs:', storedData.map(l => l.id));
         }
     } catch (error) {
-        console.error('❌ Error saving analytics data:', error);
+        console.error('❌ Error saving analytics:', error);
+        
+        // Último recurso: enviar para webhook mesmo se localStorage falhar
+        if (CONFIG.WEBHOOK_URL) {
+            sendToWebhook(data).catch(webhookError => {
+                console.error('❌ Webhook also failed:', webhookError);
+            });
+        }
     }
 }
 
@@ -466,8 +548,12 @@ async function sendToWebhook(data) {
     if (!CONFIG.WEBHOOK_URL) return;
     
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const response = await fetch(CONFIG.WEBHOOK_URL, {
             method: 'POST',
+            signal: controller.signal,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -480,13 +566,15 @@ async function sendToWebhook(data) {
             })
         });
         
+        clearTimeout(timeoutId);
+        
         if (response.ok) {
             console.log('✅ Analytics sent to webhook');
         } else {
             console.log('⚠️ Webhook response not OK');
         }
     } catch (error) {
-        console.log('ℹ️ Webhook not reachable (CORS or network)');
+        console.log('ℹ️ Webhook not reachable (CORS or network):', error.message);
     }
 }
 
@@ -509,22 +597,33 @@ function updateLoadingText() {
     }, 600);
     
     // Parar animação após redirecionamento
-    setTimeout(() => clearInterval(interval), CONFIG.REDIRECT_DELAY);
+    setTimeout(() => clearInterval(interval), redirectData.isMobile ? 1500 : CONFIG.REDIRECT_DELAY);
 }
 
-// Executar redirecionamento
-function performRedirect() {
+// 🔧 Melhorar função performRedirect para mobile
+function performRedirect(isMobile = false) {
     if (redirectData.originalUrl) {
         console.log('🚀 Redirecting to:', redirectData.originalUrl);
+        console.log('📱 Mobile optimization:', isMobile);
         
-        // Tentar redirecionamento
         try {
-            window.location.href = redirectData.originalUrl;
+            if (isMobile) {
+                // No mobile, usar window.open como fallback
+                const opened = window.open(redirectData.originalUrl, '_blank');
+                if (!opened) {
+                    // Se popup foi bloqueado, usar location.href
+                    window.location.href = redirectData.originalUrl;
+                }
+            } else {
+                // No desktop, usar método normal
+                window.location.href = redirectData.originalUrl;
+            }
         } catch (error) {
             console.error('❌ Redirect failed:', error);
             showFallbackLink();
         }
     } else {
+        console.error('❌ No URL to redirect to');
         showError();
     }
 }
@@ -541,12 +640,56 @@ function showError() {
     document.getElementById('errorContainer').classList.add('show');
 }
 
-// Função principal
+// 🐛 Debug melhorado para mobile
+function debugMobileIssues() {
+    const debug = {
+        userAgent: navigator.userAgent,
+        screen: `${screen.width}x${screen.height}`,
+        window: `${window.innerWidth}x${window.innerHeight}`,
+        localStorage: {
+            available: typeof(Storage) !== "undefined",
+            data: localStorage.getItem(CONFIG.STORAGE_KEY)
+        },
+        url: window.location.href,
+        params: Object.fromEntries(new URLSearchParams(window.location.search)),
+        timestamp: new Date().toISOString(),
+        deviceType: getDeviceType(),
+        browser: getBrowserInfo(),
+        os: getOperatingSystem()
+    };
+    
+    console.log('🐛 Mobile Debug Info:', debug);
+    
+    // Mostrar debug na tela se necessário
+    if (CONFIG.DEBUG) {
+        const debugDiv = document.getElementById('debugInfo');
+        debugDiv.querySelector('#debugContent').textContent = JSON.stringify(debug, null, 2);
+        debugDiv.classList.add('show');
+    }
+    
+    return debug;
+}
+
+// 🔧 FUNÇÃO PRINCIPAL CORRIGIDA
 async function initializeRedirect() {
     try {
-        // 1. Extrair parâmetros da URL
+        // 1. Detectar dispositivo móvel
+        redirectData.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const redirectDelay = redirectData.isMobile ? 1500 : CONFIG.REDIRECT_DELAY;
+        const fallbackDelay = redirectData.isMobile ? 3000 : CONFIG.FALLBACK_DELAY;
+        
+        console.log('📱 Is mobile device:', redirectData.isMobile);
+        console.log('⏱️ Redirect delay:', redirectDelay);
+        
+        // 2. Debug inicial
+        debugMobileIssues();
+        
+        // 3. Extrair parâmetros da URL
         const urlParams = new URLSearchParams(window.location.search);
         redirectData.linkId = urlParams.get('id');
+        
+        console.log('🔍 Processing link ID:', redirectData.linkId);
+        console.log('🌐 URL atual:', window.location.href);
         
         if (!redirectData.linkId) {
             console.error('❌ No link ID provided');
@@ -554,46 +697,107 @@ async function initializeRedirect() {
             return;
         }
         
-        console.log('🔍 Processing link ID:', redirectData.linkId);
+        // 4. Buscar dados do link no localStorage
+        let storedData;
+        try {
+            storedData = getStoredDataSafely();
+            console.log('💾 Stored data loaded:', storedData.length, 'links');
+        } catch (error) {
+            console.error('❌ Error loading stored data:', error);
+            storedData = [];
+        }
         
-        // 2. Buscar dados do link no localStorage
-        const storedData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
         const linkData = storedData.find(link => link.id === redirectData.linkId);
         
         if (!linkData) {
-            console.error('❌ Link data not found');
-            showError();
+            console.error('❌ Link data not found for ID:', redirectData.linkId);
+            console.log('📊 Available links:', storedData.map(l => l.id));
+            
+            // 🔄 Fallback: Tentar construir URL do WhatsApp genericamente
+            const fallbackUrl = 'https://wa.me/';
+            console.log('🔄 Using fallback URL:', fallbackUrl);
+            redirectData.originalUrl = fallbackUrl;
+            
+            // Mostrar erro mas tentar redirecionar mesmo assim
+            setTimeout(() => {
+                window.location.href = fallbackUrl;
+            }, 2000);
             return;
         }
         
         redirectData.originalUrl = linkData.originalUrl;
         console.log('✅ Link data found:', linkData);
+        console.log('🎯 Target URL:', redirectData.originalUrl);
         
-        // 3. Iniciar animações
+        // 5. Iniciar animações
         updateLoadingText();
         
-        // 4. Coletar dados de analytics
-        const analyticsData = await collectAnalyticsData();
-        console.log('📊 Analytics collected:', analyticsData);
+        // 6. Coletar dados de analytics (com timeout para mobile)
+        let analyticsData;
+        try {
+            const analyticsPromise = collectAnalyticsData();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Analytics timeout')), 3000)
+            );
+            
+            analyticsData = await Promise.race([analyticsPromise, timeoutPromise]);
+            console.log('📊 Analytics collected:', analyticsData);
+        } catch (error) {
+            console.warn('⚠️ Analytics collection failed, using basic data:', error);
+            // Fallback com dados básicos
+            analyticsData = {
+                linkId: redirectData.linkId,
+                timestamp: new Date().toISOString(),
+                deviceType: getDeviceType(),
+                browser: getBrowserInfo(),
+                os: getOperatingSystem(),
+                referrer: document.referrer || 'direct',
+                userAgent: navigator.userAgent,
+                location: { country: 'Unknown', city: 'Unknown', ip: 'unknown' },
+                sessionData: {
+                    isMobile: redirectData.isMobile,
+                    loadTime: Date.now() - redirectData.startTime
+                }
+            };
+        }
         
-        // 5. Atualizar interface
+        // 7. Atualizar interface
         updateAnalyticsDisplay(analyticsData);
         
-        // 6. Salvar dados localmente
-        saveAnalyticsData(analyticsData);
+        // 8. Salvar dados localmente
+        try {
+            saveAnalyticsDataSafely(analyticsData);
+        } catch (error) {
+            console.warn('⚠️ Failed to save analytics locally:', error);
+        }
         
-        // 7. Enviar para webhook (opcional)
-        await sendToWebhook(analyticsData);
+        // 9. Enviar para webhook (não bloquear no mobile)
+        if (!redirectData.isMobile) {
+            await sendToWebhook(analyticsData);
+        } else {
+            // No mobile, enviar sem aguardar
+            sendToWebhook(analyticsData).catch(console.warn);
+        }
         
-        // 8. Executar redirecionamento após delay
-        setTimeout(performRedirect, CONFIG.REDIRECT_DELAY);
+        // 10. Executar redirecionamento
+        console.log('🚀 Starting redirect in', redirectDelay, 'ms');
+        setTimeout(() => {
+            performRedirect(redirectData.isMobile);
+        }, redirectDelay);
         
-        // 9. Mostrar link manual como fallback
-        setTimeout(showFallbackLink, CONFIG.FALLBACK_DELAY);
+        // 11. Mostrar link manual como fallback
+        setTimeout(showFallbackLink, fallbackDelay);
         
     } catch (error) {
         console.error('❌ Critical error in redirect process:', error);
-        showError();
+        
+        // 🔄 Último recurso: tentar redirecionar para WhatsApp mesmo com erro
+        const fallbackUrl = 'https://wa.me/';
+        console.log('🆘 Emergency fallback to:', fallbackUrl);
+        
+        setTimeout(() => {
+            window.location.href = fallbackUrl;
+        }, 2000);
     }
 }
 
@@ -631,6 +835,9 @@ if (CONFIG.DEBUG) {
     console.log('🐛 Debug mode enabled');
     console.log('🔧 Config:', CONFIG);
 }
+
+console.log('📱 WhatsApp Analytics Redirect - GitHub Pages Version v2.1');
+console.log('🔧 Mobile compatibility improved');
 </script>
 
 </body>
