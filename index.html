@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Links para WhatsApp - Com Analytics</title>
+    <meta name="description" content="Gere links rastreáveis do WhatsApp com analytics completos - dispositivos, localização, cliques em tempo real">
+    <meta name="keywords" content="whatsapp, analytics, link generator, rastreamento, marketing digital">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Gerador WhatsApp Analytics">
+    <meta property="og:description" content="Crie links do WhatsApp com rastreamento completo de cliques">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+    
+    <style>
+        :root {
+            --whatsapp-green: #25d366;
+            --whatsapp-dark: #128c7e;
+            --bg-light: #e9f4f8;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #f0f8ff 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem 1rem;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+            background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--whatsapp-green);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-weight: normal;
+            color: #495057;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-box {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin: 0.8rem 0;
+            position: relative;
+        }
+
+        .link-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 0.4rem;
+        }
+
+        .link-url {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--whatsapp-green);
+            word-break: break-all;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
+        }
+
+        .link-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-copy {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #545b62;
+        }
+
+        .btn-test {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #138496;
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp-green);
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: var(--whatsapp-dark);
+        }
+
+        .btn-dashboard {
+            background: #fd7e14;
+            color: white;
+            width: 100%;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .btn-dashboard:hover {
+            background: #e86100;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .qr-title {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        #qrcode img {
+            max-width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .analytics-info {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .analytics-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #495057;
+            font-size: 0.8rem;
+        }
+
+        .github-link {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .github-link:hover {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem 0.5rem;
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .link-actions {
+                flex-direction: column;
+            }
+            
+            .btn-small {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .analytics-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- GitHub Link -->
+    <a href="https://github.com/seuusuario/whatsapp-analytics" class="github-link" title="Ver no GitHub">⭐</a>
+
+    <div class="header">
+        <h1>📱 WhatsApp Analytics</h1>
+        <p class="subtitle">Gere links rastreáveis com analytics completos</p>
+        <span class="badge">🆕 V2.0 - GitHub Pages</span>
+    </div>
+
+    <form id="linkForm">
+        <div class="form-group">
+            <label for="whatsappNumber">📞 Número do WhatsApp</label>
+            <input type="text" id="whatsappNumber" placeholder="11988884444" required>
+        </div>
+
+        <div class="form-group">
+            <label for="message">💬 Mensagem Inicial (opcional)</label>
+            <textarea id="message" placeholder="Olá! Tenho interesse em saber mais..." rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="campaign">🎯 Nome da Campanha</label>
+            <input type="text" id="campaign" placeholder="Ex: Lançamento Produto X">
+        </div>
+
+        <div class="form-group">
+            <label for="utm_source">📊 UTM Source</label>
+            <input type="text" id="utm_source" placeholder="Ex: instagram, facebook, google">
+        </div>
+
+        <div class="form-group">
+            <label for="utm_medium">📈 UTM Medium</label>
+            <input type="text" id="utm_medium" placeholder="Ex: post, story, anuncio">
+        </div>
+
+        <div class="form-group">
+            <label for="utm_campaign">🏷️ UTM Campaign</label>
+            <input type="text" id="utm_campaign" placeholder="Ex: blackfriday2025">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="enableTracking" checked>
+            <label for="enableTracking">📊 Habilitar Analytics Avançado</label>
+        </div>
+
+        <button type="submit" class="generate-btn">
+            🚀 Gerar Links Rastreáveis
+        </button>
+    </form>
+
+    <div id="resultSection" class="result-section">
+        <div class="result-title">
+            ✅ Links Gerados com Sucesso!
+        </div>
+
+        <div class="link-box">
+            <div class="link-label">🔗 Link Original (WhatsApp Direto)</div>
+            <div id="originalLink" class="link-url"></div>
+            <div class="link-actions">
+                <button class="btn-small btn-copy" onclick="copyLink('originalLink')">📋 Copiar</button>
+                <a id="originalLinkAction" href="#" target="_blank" class="btn-small btn-whatsapp">💬 Testar</a>
+            </div>
+        </div>
+
+        <div class="link-box" id="trackingLinkBox">
+            <div class="link-label">📊 Link Rastreável (Use Este para Analytics)</div>
+            <div id="trackingLink" class="link-url"></div>
+            <div class="link-actions">
+                <button class="btn-small btn-copy" onclick="copyLink('trackingLink')">📋 Copiar</button>
+                <a id="trackingLinkAction" href="#" target="_blank" class="btn-small btn-test">🧪 Testar</a>
+            </div>
+        </div>
+
+        <div class="analytics-info" id="analyticsInfo">
+            <strong>📊 Analytics que serão capturados:</strong>
+            <div class="analytics-features">
+                <div class="feature-item">📱 Dispositivo</div>
+                <div class="feature-item">🌐 Navegador</div>
+                <div class="feature-item">🕐 Horário</div>
+                <div class="feature-item">🌍 Localização</div>
+                <div class="feature-item">📊 Origem</div>
+                <div class="feature-item">🔄 Conversões</div>
+            </div>
+        </div>
+
+        <a href="dashboard.html" target="_blank" class="btn-small btn-dashboard">
+            📊 Abrir Dashboard de Analytics
+        </a>
+
+        <div class="qr-section">
+            <div class="qr-title">📱 QR Code para Compartilhamento</div>
+            <div id="qrcode"></div>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="notification">
+    📋 Link copiado para a área de transferência!
+</div>
+
+<script>
+// Configurações
+const CONFIG = {
+    BASE_URL: window.location.origin + window.location.pathname.replace('index.html', ''),
+    STORAGE_KEY: 'whatsapp_analytics_github',
+    WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/qrdoce' // Opcional
+};
+
+// Dados em memória
+let analyticsData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+
+// Utilitários
+function generateLinkId() {
+    return 'wa_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+}
+
+function formatPhoneNumber(phone) {
+    return phone.replace(/\D/g, '').slice(0, 11);
+}
+
+function createWhatsAppLink(phone, message, utmParams) {
+    let link = `https://wa.me/55${phone}`;
+    
+    const params = [];
+    if (message) params.push(`text=${encodeURIComponent(message)}`);
+    
+    // Adicionar UTMs
+    Object.entries(utmParams).forEach(([key, value]) => {
+        if (value) params.push(`${key}=${encodeURIComponent(value)}`);
+    });
+    
+    if (params.length > 0) {
+        link += '?' + params.join('&');
+    }
+    
+    return link;
+}
+
+function createTrackingLink(linkId) {
+    return `${CONFIG.BASE_URL}redirect.html?id=${linkId}`;
+}
+
+function saveToStorage(linkData) {
+    analyticsData.push(linkData);
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(analyticsData));
+}
+
+function copyLink(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('📋 Link copiado para a área de transferência!');
+    }).catch(() => {
+        // Fallback para navegadores mais antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('📋 Link copiado!');
+    });
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+function generateQRCode(text) {
+    const qrcodeContainer = document.getElementById('qrcode');
+    qrcodeContainer.innerHTML = '';
+    
+    // Usar API gratuita do QR Server
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}&bgcolor=f8f9fa&color=25d366`;
+    
+    const img = document.createElement('img');
+    img.src = qrUrl;
+    img.alt = 'QR Code';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
+    
+    img.onload = () => {
+        qrcodeContainer.appendChild(img);
+    };
+    
+    img.onerror = () => {
+        qrcodeContainer.innerHTML = '<p style="color: #dc3545;">❌ Erro ao gerar QR Code</p>';
+    };
+}
+
+// Event Listeners
+document.getElementById('linkForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // Coletar dados do formulário
+    const formData = {
+        phone: formatPhoneNumber(document.getElementById('whatsappNumber').value),
+        message: document.getElementById('message').value.trim(),
+        campaign: document.getElementById('campaign').value.trim() || 'Sem nome',
+        enableTracking: document.getElementById('enableTracking').checked
+    };
+    
+    // Validações
+    if (formData.phone.length < 10 || formData.phone.length > 11) {
+        alert('⚠️ Por favor, insira um número válido (10-11 dígitos)');
+        return;
+    }
+    
+    // UTM Parameters
+    const utmParams = {
+        utm_source: document.getElementById('utm_source').value.trim(),
+        utm_medium: document.getElementById('utm_medium').value.trim(),
+        utm_campaign: document.getElementById('utm_campaign').value.trim()
+    };
+    
+    // Gerar link original
+    const originalLink = createWhatsAppLink(formData.phone, formData.message, utmParams);
+    
+    // Gerar link rastreável se necessário
+    let trackingLink = originalLink;
+    let linkId = null;
+    
+    if (formData.enableTracking) {
+        linkId = generateLinkId();
+        trackingLink = createTrackingLink(linkId);
+        
+        // Salvar dados do link
+        const linkData = {
+            id: linkId,
+            originalUrl: originalLink,
+            trackingUrl: trackingLink,
+            campaign: formData.campaign,
+            phone: formData.phone,
+            message: formData.message,
+            utmParams: utmParams,
+            createdAt: new Date().toISOString(),
+            clicks: []
+        };
+        
+        saveToStorage(linkData);
+        console.log('✅ Link salvo:', linkData);
+    }
+    
+    // Atualizar interface
+    document.getElementById('originalLink').textContent = originalLink;
+    document.getElementById('originalLinkAction').href = originalLink;
+    
+    document.getElementById('trackingLink').textContent = trackingLink;
+    document.getElementById('trackingLinkAction').href = trackingLink;
+    
+    // Mostrar/esconder seção de tracking
+    const trackingBox = document.getElementById('trackingLinkBox');
+    const analyticsInfo = document.getElementById('analyticsInfo');
+    
+    if (formData.enableTracking) {
+        trackingBox.style.display = 'block';
+        analyticsInfo.style.display = 'block';
+    } else {
+        trackingBox.style.display = 'none';
+        analyticsInfo.style.display = 'none';
+    }
+    
+    // Mostrar resultados
+    document.getElementById('resultSection').classList.add('show');
+    
+    // Gerar QR Code (usar o link rastreável se disponível)
+    generateQRCode(trackingLink);
+    
+    // Copiar automaticamente o link principal
+    navigator.clipboard.writeText(trackingLink).then(() => {
+        showNotification('✅ Link principal copiado automaticamente!');
+    }).catch(() => {
+        console.log('Clipboard não disponível');
+    });
+    
+    // Enviar para webhook (opcional)
+    if (CONFIG.WEBHOOK_URL) {
+        sendToWebhook({
+            ...formData,
+            originalUrl: originalLink,
+            trackingUrl: trackingLink,
+            linkId: linkId,
+            utmParams: utmParams
+        });
+    }
+    
+    // Analytics do Google (se disponível)
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'link_generated', {
+            event_category: 'WhatsApp',
+            event_label: formData.campaign
+        });
+    }
+});
+
+// Toggle do analytics
+document.getElementById('enableTracking').addEventListener('change', function() {
+    const info = document.getElementById('analyticsInfo');
+    info.style.display = this.checked ? 'block' : 'none';
+});
+
+// Enviar para webhook (com tratamento de erro)
+async function sendToWebhook(data) {
+    try {
+        const response = await fetch(CONFIG.WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...data,
+                source: 'github_pages',
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ Dados enviados para webhook');
+        }
+    } catch (error) {
+        console.log('ℹ️ Webhook não disponível (CORS ou rede)');
+    }
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 WhatsApp Analytics Generator - GitHub Pages Version');
+    console.log('📊 Links salvos:', analyticsData.length);
+    
+    // Preencher campos com exemplo se vazio
+    if (!localStorage.getItem('demo_filled')) {
+        document.getElementById('utm_source').value = 'github';
+        document.getElementById('utm_medium').value = 'demo';
+        localStorage.setItem('demo_filled', 'true');
+    }
+});
+</script>
+
+</body>
+</html>
