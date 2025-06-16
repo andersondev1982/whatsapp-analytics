@@ -468,7 +468,7 @@
 // Configurações
 const CONFIG = {
     STORAGE_KEY: 'whatsapp_analytics_invisible',
-    WEBHOOK_URL: 'https://editorn8n.clickmaxagency.com/webhook-test/analytics', // Opcional
+    WEBHOOK_URL: 'https://webhook.clickmaxagency.com/webhook/qrcode', // Webhook correto
     GEOLOCATION_APIS: [
         'https://ipapi.co/json/',
         'https://ipinfo.io/json',
@@ -644,7 +644,7 @@ function trackEvent(eventType, data = {}) {
         setTimeout(hideTrackingStatus, 2000);
     }
     
-    // Enviar para webhook (opcional)
+    // Enviar para webhook
     if (CONFIG.WEBHOOK_URL) {
         sendEventToWebhook(eventData).catch(console.warn);
     }
@@ -832,7 +832,9 @@ async function sendEventToWebhook(eventData) {
         });
         
         if (response.ok) {
-            console.log('✅ Evento enviado para webhook');
+            console.log('✅ Evento enviado para webhook:', CONFIG.WEBHOOK_URL);
+        } else {
+            console.log('⚠️ Webhook retornou erro:', response.status);
         }
     } catch (error) {
         console.log('ℹ️ Webhook não disponível:', error.message);
@@ -922,6 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('📱 WhatsApp Analytics Generator - Invisible Tracking v3.0');
     console.log('🔧 Sistema sem redirecionamento ativo');
+    console.log('🌐 Webhook:', CONFIG.WEBHOOK_URL);
     
     // Inicializar tracking invisível
     initializeInvisibleTracking();
@@ -946,6 +949,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 console.log('🚀 Sistema de tracking invisível carregado!');
+console.log('📡 Webhook configurado:', CONFIG.WEBHOOK_URL);
 </script>
 
 </body>
