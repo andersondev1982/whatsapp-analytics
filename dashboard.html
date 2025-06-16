@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analytics - WhatsApp Links</title>
+    <meta name="description" content="Dashboard completo de analytics para links do WhatsApp - visualize cliques, dispositivos e conversões">
+    
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <style>
+        :root {
+            --primary-color: #25d366;
+            --primary-dark: #128c7e;
+            --secondary-color: #075e54;
+            --bg-light: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --shadow: 0 2px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e3f2fd 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark), var(--secondary-color));
+            color: white;
+            padding: 2.5rem 0;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .header .stats-quick {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .quick-stat {
+            text-align: center;
+        }
+
+        .quick-stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .quick-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .controls-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .control-item label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .control-item select,
+        .control-item input {
+            padding: 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            min-width: 140px;
+        }
+
+        .control-item select:focus,
+        .control-item input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.1);
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .data-table {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .data-table-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .data-table-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(37, 211, 102, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-primary {
+            background: rgba(37, 211, 102, 0.1);
+            color: var(--primary-color);
+        }
+
+        .badge-info {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info-color);
+        }
+
+        .badge-warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #856404;
+        }
+
+        .location-list {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .location-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .location-item:last-child {
+            border-bottom: none;
+        }
+
+        .location-item:hover {
+            background: rgba(37, 211, 102, 0.05);
+            margin: 0 -1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .location-name {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state-text {
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            padding: 0.8rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 1200px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .header .subtitle {
+                font-size: 1rem;
+            }
+
+            .header .stats-quick {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .controls-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls-group {
+                justify-content: space-between;
+            }
+
+            .control-item select,
+            .control-item input {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-link {
+                position: static;
+                margin-bottom: 1rem;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">← Voltar ao Gerador</a>
+
+<div class="header">
+    <div class="header-content">
+        <h1>📊 Dashboard Analytics</h1>
+        <p class="subtitle">Monitoramento Completo dos Links WhatsApp</p>
+        <div class="stats-quick">
+            <div class="quick-stat">
+                <span class="quick-stat-number" id="quickTotalLinks">0</span>
+                <span class="quick-stat-label">Links Criados</span>
+            </div>
+            <div class="quick-stat">
+                <span class="quick-stat-number" id="quickTotalClicks">0</span>
+                <span class="quick-stat-label">Total de Cliques</span>
+            </div>
+            <div class="quick-stat">
+                <span class="quick-stat-number" id="quickConversionRate">0%</span>
+                <span class="quick-stat-label">Taxa de Conversão</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Controles -->
+    <div class="controls-section">
+        <div class="controls-group">
+            <div class="control-item">
+                <label>Campanha</label>
+                <select id="campaignFilter">
+                    <option value="">Todas as campanhas</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Período</label>
+                <select id="periodFilter">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                    <option value="365">Último ano</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Data Inicial</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="control-item">
+                <label>Data Final</label>
+                <input type="date" id="endDate">
+            </div>
+        </div>
+        <div class="controls-group">
+            <button class="btn btn-primary" onclick="updateDashboard()">🔍 Atualizar</button>
+            <button class="btn btn-info" onclick="exportData()">📊 Exportar CSV</button>
+            <button class="btn btn-secondary" onclick="window.location.reload()">🔄 Recarregar</button>
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar Dados</button>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-number" id="totalLinks">0</div>
+            <div class="stat-label">Links Criados</div>
+            <div class="stat-change positive" id="linksChange">+0 esta semana</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👆</div>
+            <div class="stat-number" id="totalClicks">0</div>
+            <div class="stat-label">Total de Cliques</div>
+            <div class="stat-change positive" id="clicksChange">+0 hoje</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number" id="uniqueClicks">0</div>
+            <div class="stat-label">Cliques Únicos</div>
+            <div class="stat-change" id="uniqueChange">~0% duplicados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-number" id="avgClicksPerLink">0</div>
+            <div class="stat-label">Média por Link</div>
+            <div class="stat-change" id="avgChange">Performance</div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">📈 Cliques ao Longo do Tempo</div>
+                    <div class="chart-subtitle">Visualização temporal dos acessos</div>
+                </div>
+            </div>
+            <canvas id="clicksChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="location-list">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">🌍 Top Localizações</div>
+                    <div class="chart-subtitle">Países e cidades com mais acessos</div>
+                </div>
+            </div>
+            <div id="locationsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🌍</div>
+                    <div class="empty-state-title">Nenhum dado disponível</div>
+                    <div class="empty-state-text">Os dados de localização aparecerão aqui após os primeiros cliques</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Dispositivos -->
+    <div class="chart-container">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">📱 Distribuição por Dispositivos</div>
+                <div class="chart-subtitle">Mobile, Desktop e Tablet</div>
+            </div>
+        </div>
+        <canvas id="deviceChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Tabela de Links -->
+    <div class="data-table">
+        <div class="data-table-header">
+            <div class="data-table-title">🔗 Histórico Completo de Links</div>
+            <div class="data-table-subtitle">Todos os links criados e sua performance detalhada</div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campanha</th>
+                        <th>Criado em</th>
+                        <th>Cliques</th>
+                        <th>Último Acesso</th>
+                        <th>Dispositivo Principal</th>
+                        <th>Taxa de Conversão</th>
+                    </tr>
+                </thead>
+                <tbody id="linksTableBody">
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-title">Nenhum link encontrado</div>
+                            <div class="empty-state-text">
+                                <a href="index.html" class="btn btn-primary">🔗 Criar Primeiro Link</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<script>
+// Configuração
+const CONFIG = {
+    STORAGE_KEY: 'whatsapp_analytics_github',
+    UPDATE_INTERVAL: 30000, // 30 segundos
+    ANIMATION_DURATION: 500
+};
+
+// Estado global
+let analyticsData = [];
+let charts = {
+    clicks: null,
+    device: null
+};
+
+// Carregar dados do localStorage
+function loadData() {
+    try {
+        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
+        analyticsData = data ? JSON.parse(data) : [];
+        console.log('📊 Dados carregados:', analyticsData.length, 'links');
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+        analyticsData = [];
+        return false;
+    }
+}
+
+// Mostrar/esconder loading
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Filtrar dados por período
+function filterDataByPeriod(days) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    return analyticsData.filter(link => {
+        const linkDate = new Date(link.createdAt);
+        return linkDate >= cutoffDate;
+    });
+}
+
+// Filtrar dados por campanha
+function filterDataByCampaign(data, campaign) {
+    if (!campaign) return data;
+    return data.filter(link => link.campaign === campaign);
+}
+
+// Atualizar filtro de campanhas
+function updateCampaignFilter() {
+    const select = document.getElementById('campaignFilter');
+    const campaigns = [...new Set(analyticsData.map(item => item.campaign).filter(Boolean))];
+    
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">Todas as campanhas</option>';
+    
+    campaigns.forEach(campaign => {
+        const option = document.createElement('option');
+        option.value = campaign;
+        option.textContent = campaign;
+        if (campaign === currentValue) option.selected = true;
+        select.appendChild(option);
+    });
+}
+
+// Calcular estatísticas
+function calculateStats(filteredData) {
+    const totalLinks = filteredData.length;
+    const allClicks = filteredData.flatMap(link => link.clicks || []);
+    const totalClicks = allClicks.length;
+    
+    // Cliques únicos baseados em fingerprint (IP + UserAgent)
+    const uniqueClicks = new Set(
+        allClicks.map(click => `${click.location?.ip || 'unknown'}_${click.userAgent?.slice(0, 50) || 'unknown'}`)
+    ).size;
+    
+    const avgClicksPerLink = totalLinks > 0 ? (totalClicks / totalLinks).toFixed(1) : 0;
+    const conversionRate = totalClicks > 0 ? ((uniqueClicks / totalClicks) * 100).toFixed(1) : 0;
+    
+    // Estatísticas de crescimento
+    const today = new Date().toISOString().split('T')[0];
+    const thisWeek = new Date();
+    thisWeek.setDate(thisWeek.getDate() - 7);
+    
+    const todayClicks = allClicks.filter(click => click.timestamp.split('T')[0] === today).length;
+    const thisWeekLinks = filteredData.filter(link => new Date(link.createdAt) >= thisWeek).length;
+    
+    return { 
+        totalLinks, 
+        totalClicks, 
+        uniqueClicks, 
+        avgClicksPerLink, 
+        conversionRate,
+        todayClicks,
+        thisWeekLinks
+    };
+}
+
+// Atualizar cards de estatísticas
+function updateStatsCards(stats) {
+    // Cards principais
+    document.getElementById('totalLinks').textContent = stats.totalLinks;
+    document.getElementById('totalClicks').textContent = stats.totalClicks;
+    document.getElementById('uniqueClicks').textContent = stats.uniqueClicks;
+    document.getElementById('avgClicksPerLink').textContent = stats.avgClicksPerLink;
+    
+    // Quick stats no header
+    document.getElementById('quickTotalLinks').textContent = stats.totalLinks;
+    document.getElementById('quickTotalClicks').textContent = stats.totalClicks;
+    document.getElementById('quickConversionRate').textContent = stats.conversionRate + '%';
+    
+    // Indicadores de mudança
+    document.getElementById('linksChange').textContent = `+${stats.thisWeekLinks} esta semana`;
+    document.getElementById('clicksChange').textContent = `+${stats.todayClicks} hoje`;
+    document.getElementById('uniqueChange').textContent = `${((1 - stats.uniqueClicks / Math.max(stats.totalClicks, 1)) * 100).toFixed(0)}% duplicados`;
+    document.getElementById('avgChange').textContent = stats.avgClicksPerLink >= 5 ? 'Excelente' : stats.avgClicksPerLink >= 2 ? 'Boa' : 'Regular';
+}
+
+// Preparar dados para gráfico de cliques
+function prepareClicksChartData(filteredData, days) {
+    const dates = [];
+    const now = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+    }
+    
+    const clicksByDate = dates.map(date => {
+        const dayClicks = filteredData.flatMap(link => link.clicks || [])
+            .filter(click => click.timestamp.split('T')[0] === date);
+        return dayClicks.length;
+    });
+    
+    return { dates, clicksByDate };
+}
+
+// Preparar dados de dispositivos
+function prepareDeviceChartData(filteredData) {
+    const allClicks = filteredData.flatMap(link => link.clicks || []);
+    const deviceCounts = allClicks.reduce((acc, click) => {
+        const device = click.deviceType || 'unknown';
+        acc[device] = (acc[device] || 0) + 1;
+        return acc;
+    }, {});
+    
+    return deviceCounts;
+}
+
+// Preparar dados de localização
+function prepareLocationData(filteredData) {
+    const allClicks = filteredData.flatMap(link => link.clicks || []);
+    const locationCounts = allClicks.reduce((acc, click) => {
+        const country = click.location?.country || 'Unknown';
+        acc[country] = (acc[country] || 0) + 1;
+        return acc;
+    }, {});
+    
+    return Object.entries(locationCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10);
+}
+
+// Atualizar gráfico de cliques
+function updateClicksChart(chartData) {
+    const ctx = document.getElementById('clicksChart').getContext('2d');
+    
+    if (charts.clicks) {
+        charts.clicks.destroy();
+    }
+    
+    charts.clicks = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.dates.map(date => {
+                const d = new Date(date);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            }),
+            datasets: [{
+                label: 'Cliques',
+                data: chartData.clicksByDate,
+                borderColor: 'rgb(37, 211, 102)',
+                backgroundColor: 'rgba(37, 211, 102, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: 'rgb(37, 211, 102)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        color: '#6c757d'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        color: '#6c757d'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Atualizar gráfico de dispositivos
+function updateDeviceChart(deviceData) {
+    const ctx = document.getElementById('deviceChart').getContext('2d');
+    
+    if (charts.device) {
+        charts.device.destroy();
+    }
+    
+    const deviceIcons = {
+        mobile: '📱 Mobile',
+        desktop: '💻 Desktop',
+        tablet: '📟 Tablet',
+        unknown: '❓ Desconhecido'
+    };
+    
+    const labels = Object.keys(deviceData).map(device => deviceIcons[device] || device);
+    const data = Object.values(deviceData);
+    const colors = ['#25d366', '#128c7e', '#075e54', '#6c757d'];
+    
+    if (data.length === 0) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#6c757d';
+        ctx.textAlign = 'center';
+        ctx.fillText('Nenhum dado disponível', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+    }
+    
+    charts.device = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, data.length),
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed * 100) / total).toFixed(1);
+                            return `${context.label}: ${context.parsed} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Atualizar lista de localizações
+function updateLocationsList(locationData) {
+    const container = document.getElementById('locationsList');
+    
+    if (locationData.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🌍</div>
+                <div class="empty-state-title">Nenhum dado disponível</div>
+                <div class="empty-state-text">Os dados de localização aparecerão aqui após os primeiros cliques</div>
+            </div>
+        `;
+        return;
+    }
+    
+    const countryFlags = {
+        'Brasil': '🇧🇷',
+        'Brazil': '🇧🇷',
+        'United States': '🇺🇸',
+        'Estados Unidos': '🇺🇸',
+        'Argentina': '🇦🇷',
+        'Portugal': '🇵🇹',
+        'México': '🇲🇽',
+        'Mexico': '🇲🇽',
+        'Espanha': '🇪🇸',
+        'Spain': '🇪🇸'
+    };
+    
+    container.innerHTML = locationData.map(([country, count]) => `
+        <div class="location-item">
+            <div class="location-name">
+                ${countryFlags[country] || '🌍'} ${country}
+            </div>
+            <div class="location-count">${count}</div>
+        </div>
+    `).join('');
+}
+
+// Atualizar tabela de links
+function updateLinksTable(filteredData) {
+    const tbody = document.getElementById('linksTableBody');
+    
+    if (filteredData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-title">Nenhum link encontrado</div>
+                    <div class="empty-state-text">
+                        <a href="index.html" class="btn btn-primary">🔗 Criar Primeiro Link</a>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = filteredData.map(link => {
+        const clickCount = link.clicks ? link.clicks.length : 0;
+        const lastClick = link.clicks && link.clicks.length > 0 
+            ? new Date(link.clicks[link.clicks.length - 1].timestamp).toLocaleDateString('pt-BR')
+            : 'Nunca';
+        
+        // Dispositivo mais usado
+        const deviceCounts = link.clicks ? link.clicks.reduce((acc, click) => {
+            const device = click.deviceType || 'unknown';
+            acc[device] = (acc[device] || 0) + 1;
+            return acc;
+        }, {}) : {};
+        
+        const topDevice = Object.keys(deviceCounts).length > 0
+            ? Object.entries(deviceCounts).sort(([,a], [,b]) => b - a)[0][0]
+            : 'N/A';
+        
+        const deviceIcon = {
+            mobile: '📱',
+            desktop: '💻',
+            tablet: '📟'
+        }[topDevice] || '❓';
+        
+        // Taxa de conversão (simulada)
+        const conversionRate = clickCount > 0 ? Math.min((clickCount * 5) + Math.random() * 10, 100).toFixed(1) : '0.0';
+        
+        return `
+            <tr>
+                <td><span class="badge badge-primary">${link.campaign || 'Sem nome'}</span></td>
+                <td>${new Date(link.createdAt).toLocaleDateString('pt-BR')} <br>
+                    <small style="color: #6c757d;">${new Date(link.createdAt).toLocaleTimeString('pt-BR')}</small>
+                </td>
+                <td><span class="badge badge-info">${clickCount}</span></td>
+                <td>${lastClick}</td>
+                <td>${deviceIcon} ${topDevice}</td>
+                <td><span class="badge badge-warning">${conversionRate}%</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Função principal para atualizar dashboard
+function updateDashboard() {
+    showLoading();
+    
+    try {
+        loadData();
+        
+        const selectedCampaign = document.getElementById('campaignFilter').value;
+        const selectedPeriod = parseInt(document.getElementById('periodFilter').value);
+        
+        // Filtrar dados
+        let filteredData = filterDataByPeriod(selectedPeriod);
+        filteredData = filterDataByCampaign(filteredData, selectedCampaign);
+        
+        console.log('📊 Dados filtrados:', filteredData.length, 'links');
+        
+        // Atualizar todos os componentes
+        const stats = calculateStats(filteredData);
+        updateStatsCards(stats);
+        
+        const clicksChartData = prepareClicksChartData(filteredData, selectedPeriod);
+        updateClicksChart(clicksChartData);
+        
+        const deviceData = prepareDeviceChartData(filteredData);
+        updateDeviceChart(deviceData);
+        
+        const locationData = prepareLocationData(filteredData);
+        updateLocationsList(locationData);
+        
+        updateLinksTable(filteredData);
+        updateCampaignFilter();
+        
+        setTimeout(hideLoading, 500);
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar dashboard:', error);
+        hideLoading();
+        alert('Erro ao carregar dados. Tente recarregar a página.');
+    }
+}
+
+// Exportar dados para CSV
+function exportData() {
+    if (analyticsData.length === 0) {
+        alert('⚠️ Nenhum dado para exportar!');
+        return;
+    }
+    
+    const csvData = analyticsData.flatMap(link =>
+        (link.clicks || []).map(click => ({
+            'Campanha': link.campaign || 'Sem nome',
+            'Link Criado': link.createdAt,
+            'Click Timestamp': click.timestamp,
+            'Dispositivo': click.deviceType || 'unknown',
+            'Browser': click.browser || 'unknown',
+            'Sistema': click.os || 'unknown',
+            'País': click.location?.country || 'Unknown',
+            'Cidade': click.location?.city || 'Unknown',
+            'IP': click.location?.ip || 'unknown',
+            'Referrer': click.referrer || 'direct'
+        }))
+    );
+    
+    if (csvData.length === 0) {
+        alert('⚠️ Nenhum clique registrado para exportar!');
+        return;
+    }
+    
+    const headers = Object.keys(csvData[0]);
+    const csv = [
+        headers.join(','),
+        ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `whatsapp-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    console.log('📊 Dados exportados:', csvData.length, 'registros');
+}
+
+// Limpar todos os dados
+function clearAllData() {
+    if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nEsta ação não pode ser desfeita e removerá:\n• Todos os links criados\n• Todos os cliques registrados\n• Todo o histórico de analytics')) {
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+        analyticsData = [];
+        updateDashboard();
+        alert('✅ Todos os dados foram removidos com sucesso!');
+    }
+}
+
+// Definir datas padrão
+function setDefaultDates() {
+    const today = new Date();
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📊 WhatsApp Analytics Dashboard - GitHub Pages');
+    
+    setDefaultDates();
+    updateDashboard();
+    
+    // Atualizar automaticamente a cada 30 segundos
+    setInterval(() => {
+        console.log('🔄 Auto-update dashboard');
+        updateDashboard();
+    }, CONFIG.UPDATE_INTERVAL);
+    
+    // Adicionar event listeners para filtros
+    document.getElementById('campaignFilter').addEventListener('change', updateDashboard);
+    document.getElementById('periodFilter').addEventListener('change', updateDashboard);
+});
+
+// Detectar mudanças no localStorage (quando novos dados são adicionados)
+window.addEventListener('storage', (e) => {
+    if (e.key === CONFIG.STORAGE_KEY) {
+        console.log('🔄 Dados atualizados externamente, recarregando dashboard');
+        updateDashboard();
+    }
+});
+</script>
+
+</body>
+</html>
